@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { SiteHeader } from "@/components/site-header";
-import { ArrowRight, Loader2, Star } from "lucide-react";
+import { ArrowUpRight, Loader2, Sparkles } from "lucide-react";
 
 export const Route = createFileRoute("/quiz")({
   head: () => ({
@@ -108,22 +108,22 @@ Rules: 4 items, match 60-99, careers should be diverse and realistic (not just t
   }
 
   return (
-    <div className="min-h-screen bg-paper-grid">
+    <div className="min-h-screen bg-aurora">
       <SiteHeader />
-      <div className="mx-auto max-w-2xl px-4 py-10 sm:px-6 sm:py-16">
+      <div className="mx-auto max-w-2xl px-4 py-12 sm:px-6 sm:py-20">
         {!done && (
           <>
-            <div className="mb-3 flex items-center justify-between font-mono text-xs font-bold uppercase tracking-widest">
-              <span>Q{String(step + 1).padStart(2, "0")} / {String(questions.length).padStart(2, "0")}</span>
+            <div className="mb-3 flex items-center justify-between font-mono text-[11px] uppercase tracking-[0.2em] text-foreground/50">
+              <span>Question {String(step + 1).padStart(2, "0")} / {String(questions.length).padStart(2, "0")}</span>
               <span>{Math.round(((step + 1) / questions.length) * 100)}%</span>
             </div>
-            <div className="mb-10 h-3 w-full border-2 border-foreground bg-card">
+            <div className="mb-12 h-1.5 w-full overflow-hidden rounded-full bg-white/5">
               <div
-                className="h-full bg-primary transition-all"
-                style={{ width: `${((step + 1) / questions.length) * 100}%` }}
+                className="h-full rounded-full transition-all duration-500"
+                style={{ width: `${((step + 1) / questions.length) * 100}%`, background: "var(--grad-primary)" }}
               />
             </div>
-            <h1 className="font-display text-3xl font-extrabold sm:text-5xl">
+            <h1 className="font-display text-4xl leading-tight sm:text-5xl">
               {questions[step].q}
             </h1>
             <div className="mt-8 grid gap-3">
@@ -131,10 +131,10 @@ Rules: 4 items, match 60-99, careers should be diverse and realistic (not just t
                 <button
                   key={o}
                   onClick={() => pick(o)}
-                  className="card-brut card-brut-hover group flex items-center justify-between p-4 text-left sm:p-5"
+                  className="glass-card glass-card-hover group flex items-center justify-between p-5 text-left"
                 >
-                  <span className="font-display text-lg font-semibold">{o}</span>
-                  <ArrowRight className="h-5 w-5 shrink-0 text-foreground/40 transition group-hover:translate-x-1 group-hover:text-primary" />
+                  <span className="text-base font-medium">{o}</span>
+                  <ArrowUpRight className="h-4 w-4 shrink-0 text-foreground/40 transition group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-accent" />
                 </button>
               ))}
             </div>
@@ -142,9 +142,9 @@ Rules: 4 items, match 60-99, careers should be diverse and realistic (not just t
         )}
 
         {done && loading && (
-          <div className="card-brut flex flex-col items-center gap-4 p-12 text-center">
-            <Loader2 className="h-10 w-10 animate-spin text-primary" />
-            <div className="font-display text-2xl font-bold">AI is matching your careers…</div>
+          <div className="glass-card flex flex-col items-center gap-4 p-16 text-center">
+            <Loader2 className="h-8 w-8 animate-spin text-accent" />
+            <div className="font-display text-2xl">AI is matching your careers…</div>
             <div className="text-sm text-foreground/60">
               Weighing personality, interests, and how you learn.
             </div>
@@ -152,12 +152,12 @@ Rules: 4 items, match 60-99, careers should be diverse and realistic (not just t
         )}
 
         {done && !loading && error && (
-          <div className="card-brut bg-destructive/10 p-6 text-destructive">
+          <div className="glass-card border-destructive/40 p-6 text-destructive">
             {error}
             <div className="mt-3">
               <button
                 onClick={() => submit(answers)}
-                className="btn-brut bg-card px-4 py-2 font-semibold text-foreground"
+                className="btn-ghost-glass px-4 py-2 text-sm font-medium text-foreground"
               >
                 Try again
               </button>
@@ -167,58 +167,60 @@ Rules: 4 items, match 60-99, careers should be diverse and realistic (not just t
 
         {done && !loading && results && (
           <div>
-            <span className="chip-ink"><Star className="h-3 w-3" strokeWidth={3}/> Results</span>
-            <h1 className="mt-4 font-display text-4xl font-extrabold sm:text-5xl">
-              Your top matches
+            <span className="chip-glass"><Sparkles className="h-3 w-3" /> Results</span>
+            <h1 className="mt-5 font-display text-4xl leading-tight sm:text-5xl">
+              Your <em className="text-gradient">top</em> matches
             </h1>
             <div className="mt-8 space-y-4">
               {results.map((m, i) => (
-                <div key={m.career} className="card-brut p-5">
+                <div key={m.career} className="glass-card p-6">
                   <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4">
                     <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="font-mono text-[11px] font-bold text-foreground/50">
-                          #{i + 1}
-                        </span>
-                        <span className="text-2xl">{m.emoji}</span>
+                      <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/40">
+                        <span>0{i + 1}</span>
+                        <span className="text-lg">{m.emoji}</span>
                       </div>
-                      <div className="mt-1 font-display text-2xl font-bold">{m.career}</div>
-                      <p className="mt-2 text-sm text-foreground/70">{m.why}</p>
+                      <div className="mt-2 font-display text-2xl">{m.career}</div>
+                      <p className="mt-2 text-sm text-foreground/65 leading-relaxed">{m.why}</p>
                     </div>
-                    <div
-                      className="grid h-16 w-16 shrink-0 place-items-center rounded-md border-2 border-foreground text-center sm:h-20 sm:w-20"
-                      style={{ background: "var(--accent)" }}
-                    >
-                      <div>
-                        <div className="font-display text-xl font-extrabold leading-none sm:text-2xl">
-                          {m.match}
-                        </div>
-                        <div className="font-mono text-[9px] font-bold uppercase tracking-widest">
-                          match
-                        </div>
+                    <div className="text-right">
+                      <div className="font-display text-4xl leading-none text-gradient">
+                        {m.match}
+                      </div>
+                      <div className="mt-1 font-mono text-[9px] uppercase tracking-[0.2em] text-foreground/40">
+                        match
                       </div>
                     </div>
                   </div>
-                  <div className="mt-4 h-2 w-full border border-foreground bg-card">
-                    <div className="h-full bg-primary" style={{ width: `${m.match}%` }} />
+                  <div className="mt-5 h-1 w-full overflow-hidden rounded-full bg-white/5">
+                    <div className="h-full rounded-full" style={{ width: `${m.match}%`, background: "var(--grad-primary)" }} />
+                  </div>
+                  <div className="mt-5 flex gap-3">
+                    <Link
+                      to="/simulation"
+                      search={{ career: m.career }}
+                      className="btn-primary-grad inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold"
+                    >
+                      Simulate a day <ArrowUpRight className="h-3.5 w-3.5" />
+                    </Link>
+                    <Link
+                      to="/mentor"
+                      className="btn-ghost-glass px-4 py-2 text-xs font-medium"
+                    >
+                      Ask an AI mentor
+                    </Link>
                   </div>
                 </div>
               ))}
             </div>
             <div className="mt-8 flex flex-wrap gap-3">
-              <Link
-                to="/simulation"
-                className="btn-brut inline-flex items-center gap-2 bg-primary px-5 py-3 font-semibold text-primary-foreground"
-              >
-                Try a Day in the Life <ArrowRight className="h-4 w-4" />
-              </Link>
               <button
                 onClick={() => {
                   setStep(0);
                   setAnswers([]);
                   setResults(null);
                 }}
-                className="btn-brut bg-card px-5 py-3 font-semibold text-foreground"
+                className="btn-ghost-glass px-5 py-2.5 text-sm font-medium"
               >
                 Retake quiz
               </button>
