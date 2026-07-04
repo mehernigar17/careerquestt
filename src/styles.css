@@ -61,6 +61,12 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
+@theme inline {
+  --color-xp: var(--xp);
+  --color-stress: var(--stress);
+  --color-coin: var(--coin);
+}
+
 :root {
   --radius: 0.625rem;
   --background: oklch(0.985 0.008 95);
