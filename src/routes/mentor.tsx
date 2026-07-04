@@ -29,22 +29,37 @@ const mentors = [
   { id: "lawyer", label: "Corporate Lawyer", tag: "LAW", grad: "linear-gradient(135deg, oklch(0.6 0.15 250), oklch(0.5 0.1 265))" },
   { id: "pm", label: "Product Manager", tag: "PM", grad: "linear-gradient(135deg, oklch(0.78 0.19 40), oklch(0.7 0.22 350))" },
 ];
+  
+const extraMentors = [
+  { id: "data", label: "Senior Data Scientist", tag: "DS", grad: "linear-gradient(135deg, oklch(0.7 0.18 220), oklch(0.78 0.17 175))" },
+  { id: "cyber", label: "Cyber Security Lead", tag: "SEC", grad: "linear-gradient(135deg, oklch(0.55 0.18 30), oklch(0.5 0.15 300))" },
+  { id: "teacher", label: "Veteran Teacher", tag: "EDU", grad: "linear-gradient(135deg, oklch(0.78 0.16 145), oklch(0.72 0.15 90))" },
+  { id: "architect", label: "Principal Architect", tag: "ARC", grad: "linear-gradient(135deg, oklch(0.68 0.14 85), oklch(0.55 0.1 60))" },
+  { id: "marketer", label: "Head of Marketing", tag: "MKT", grad: "linear-gradient(135deg, oklch(0.75 0.2 15), oklch(0.72 0.2 340))" },
+  { id: "founder", label: "Startup Founder", tag: "CEO", grad: "linear-gradient(135deg, oklch(0.72 0.19 295), oklch(0.78 0.19 40))" },
+  { id: "finance", label: "Investment Banker", tag: "FIN", grad: "linear-gradient(135deg, oklch(0.5 0.12 250), oklch(0.65 0.15 195))" },
+  { id: "writer", label: "Senior Journalist", tag: "JRN", grad: "linear-gradient(135deg, oklch(0.6 0.08 60), oklch(0.5 0.06 40))" },
+  { id: "chef", label: "Executive Chef", tag: "CHF", grad: "linear-gradient(135deg, oklch(0.7 0.2 30), oklch(0.75 0.18 85))" },
+  { id: "psych", label: "Clinical Psychologist", tag: "PSY", grad: "linear-gradient(135deg, oklch(0.72 0.15 200), oklch(0.75 0.14 155))" },
+];
+
+const allMentors = [...mentors, ...extraMentors];
 
 type Msg = { role: "user" | "assistant"; content: string };
 
 function MentorPage() {
-  const [mentor, setMentor] = useState(mentors[0]);
+  const [mentor, setMentor] = useState(allMentors[0]);
   const [messages, setMessages] = useState<Msg[]>([
     {
       role: "assistant",
-      content: `Hi — I'm a ${mentors[0].label.toLowerCase()}. Ask me anything about the job: a typical week, hard days, how to break in, what I wish I'd known.`,
+      content: `Hi — I'm a ${allMentors[0].label.toLowerCase()}. Ask me anything about the job: a typical week, hard days, how to break in, what I wish I'd known.`,
     },
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
 
-  function switchMentor(m: (typeof mentors)[number]) {
+  function switchMentor(m: (typeof allMentors)[number]) {
     setMentor(m);
     setMessages([
       {
@@ -97,7 +112,7 @@ function MentorPage() {
         <aside>
           <span className="chip-glass">Pick a mentor</span>
           <div className="mt-4 space-y-2">
-            {mentors.map((m) => {
+            {allMentors.map((m) => {
               const active = mentor.id === m.id;
               return (
                 <button
