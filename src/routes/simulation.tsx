@@ -260,10 +260,16 @@ function evaluateLocally(career: string, scene: Scene, answer: string): Grade {
   const structureScore = clamp(structureHits * 4, 0, 14);
   const detailScore = clamp((specificHits * 4) + (taskHits * 3), 0, 22);
   const score = clamp(lengthScore + vocabularyScore + relevanceScore + structureScore + detailScore, 0, 100);
-  const verdict: Grade["verdict"] = score >= 86 ? "excellent" : score >= 70 ? "good" : score >= 50 ? "okay" : score >= 30 ? "poor" : "failed";
-  const xp = verdict === "excellent" ? 110 : verdict === "good" ? 75 : verdict === "okay" ? 35 : verdict === "poor" ? -5 : -30;
-  const stress = verdict === "excellent" ? -12 : verdict === "good" ? -4 : verdict === "okay" ? 8 : verdict === "poor" ? 22 : 35;
-  const salary = verdict === "excellent" ? 150 : verdict === "failed" ? -80 : 0;
+  // Harder scenes: stricter thresholds, bigger XP + salary swings, more stress.
+  const diffMult = scene.difficulty === "easy" ? 0.85 : scene.difficulty === "medium" ? 1 : scene.difficulty === "hard" ? 1.25 : 1.55;
+  const bump = scene.difficulty === "easy" ? -6 : scene.difficulty === "medium" ? 0 : scene.difficulty === "hard" ? 4 : 8;
+  const verdict: Grade["verdict"] = score >= 86 - bump ? "excellent" : score >= 70 - bump ? "good" : score >= 50 - bump ? "okay" : score >= 30 - bump ? "poor" : "failed";
+  const baseXp = verdict === "excellent" ? 110 : verdict === "good" ? 75 : verdict === "okay" ? 35 : verdict === "poor" ? -5 : -30;
+  const xp = Math.round(baseXp * diffMult);
+  const baseStress = verdict === "excellent" ? -12 : verdict === "good" ? -4 : verdict === "okay" ? 8 : verdict === "poor" ? 22 : 35;
+  const stress = Math.round(baseStress * (0.6 + diffMult * 0.5));
+  const baseSal = verdict === "excellent" ? 150 : verdict === "failed" ? -80 : 0;
+  const salary = Math.round(baseSal * diffMult);
   const feedback = verdict === "excellent" || verdict === "good"
     ? "Strong professional attempt: it is specific, structured, and tied to the task. To make it even sharper, name the biggest risk and how you would verify the outcome."
     : verdict === "okay"
@@ -280,6 +286,13 @@ function evaluateLocally(career: string, scene: Scene, answer: string): Grade {
     ...(verdict === "poor" || verdict === "failed" ? { punishment: scene.taskType === "code" ? "The change would be sent back in review." : "The recommendation would be escalated for correction." } : {}),
   };
 }
+
+const difficultyMeta: Record<Difficulty, { label: string; color: string; weight: number }> = {
+  easy:   { label: "Easy",   color: "oklch(0.78 0.17 175)", weight: 1 },
+  medium: { label: "Medium", color: "oklch(0.85 0.15 90)",  weight: 1.5 },
+  hard:   { label: "Hard",   color: "oklch(0.78 0.19 40)",  weight: 2 },
+  expert: { label: "Expert", color: "oklch(0.72 0.18 340)", weight: 2.5 },
+};
 
 function SimPage() {
   const { career } = Route.useSearch();
