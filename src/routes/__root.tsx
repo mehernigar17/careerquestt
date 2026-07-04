@@ -84,13 +84,19 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           "Live a virtual day inside real careers. Take the AI quiz, run daily simulations, chat with AI mentors, and build your learning roadmap.",
       },
       { name: "author", content: "CareerQuest" },
-      { property: "og:title", content: "CareerQuest — Experience your future career" },
+      { property: "og:title", content: "CareerQuest — Don't guess your future. Experience it." },
       {
         property: "og:description",
         content: "Simulate a day in real careers. AI mentors, XP, and personalized roadmaps.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "CareerQuest — Don't guess your future. Experience it." },
+      { name: "description", content: "Live a virtual day inside real careers. Take the AI quiz, run daily simulations, chat with AI mentors, and build your learning roadmap." },
+      { property: "og:description", content: "Live a virtual day inside real careers. Take the AI quiz, run daily simulations, chat with AI mentors, and build your learning roadmap." },
+      { name: "twitter:description", content: "Live a virtual day inside real careers. Take the AI quiz, run daily simulations, chat with AI mentors, and build your learning roadmap." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/8a2f40a7-12a1-4b12-8833-aa98eabfeda0/id-preview-d46c44b3--b2498a4a-6a3a-4b44-8c97-b03fd2c06acc.lovable.app-1783145748200.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/8a2f40a7-12a1-4b12-8833-aa98eabfeda0/id-preview-d46c44b3--b2498a4a-6a3a-4b44-8c97-b03fd2c06acc.lovable.app-1783145748200.png" },
     ],
     links: [
       {
