@@ -1,9 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { SiteHeader } from "@/components/site-header";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { ArrowRight, Loader2, Sparkles } from "lucide-react";
+import { ArrowRight, Loader2, Star } from "lucide-react";
 
 export const Route = createFileRoute("/quiz")({
   head: () => ({
@@ -110,28 +108,33 @@ Rules: 4 items, match 60-99, careers should be diverse and realistic (not just t
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-paper-grid">
       <SiteHeader />
-      <div className="mx-auto max-w-2xl px-6 py-16">
+      <div className="mx-auto max-w-2xl px-4 py-10 sm:px-6 sm:py-16">
         {!done && (
           <>
-            <div className="mb-6 flex items-center justify-between text-sm text-muted-foreground">
-              <span>
-                Question {step + 1} of {questions.length}
-              </span>
+            <div className="mb-3 flex items-center justify-between font-mono text-xs font-bold uppercase tracking-widest">
+              <span>Q{String(step + 1).padStart(2, "0")} / {String(questions.length).padStart(2, "0")}</span>
               <span>{Math.round(((step + 1) / questions.length) * 100)}%</span>
             </div>
-            <Progress value={((step + 1) / questions.length) * 100} className="mb-10" />
-            <h1 className="text-3xl font-bold tracking-tight">{questions[step].q}</h1>
+            <div className="mb-10 h-3 w-full border-2 border-foreground bg-card">
+              <div
+                className="h-full bg-primary transition-all"
+                style={{ width: `${((step + 1) / questions.length) * 100}%` }}
+              />
+            </div>
+            <h1 className="font-display text-3xl font-extrabold sm:text-5xl">
+              {questions[step].q}
+            </h1>
             <div className="mt-8 grid gap-3">
               {questions[step].options.map((o) => (
                 <button
                   key={o}
                   onClick={() => pick(o)}
-                  className="group flex items-center justify-between rounded-2xl border-2 border-border bg-card p-5 text-left transition hover:border-primary hover:shadow-lg"
+                  className="card-brut card-brut-hover group flex items-center justify-between p-4 text-left sm:p-5"
                 >
-                  <span className="font-medium">{o}</span>
-                  <ArrowRight className="h-4 w-4 text-muted-foreground transition group-hover:translate-x-1 group-hover:text-primary" />
+                  <span className="font-display text-lg font-semibold">{o}</span>
+                  <ArrowRight className="h-5 w-5 shrink-0 text-foreground/40 transition group-hover:translate-x-1 group-hover:text-primary" />
                 </button>
               ))}
             </div>
@@ -139,71 +142,86 @@ Rules: 4 items, match 60-99, careers should be diverse and realistic (not just t
         )}
 
         {done && loading && (
-          <div className="flex flex-col items-center gap-4 py-24 text-center">
+          <div className="card-brut flex flex-col items-center gap-4 p-12 text-center">
             <Loader2 className="h-10 w-10 animate-spin text-primary" />
-            <div className="text-lg font-medium">AI is matching your careers…</div>
-            <div className="text-sm text-muted-foreground">
+            <div className="font-display text-2xl font-bold">AI is matching your careers…</div>
+            <div className="text-sm text-foreground/60">
               Weighing personality, interests, and how you learn.
             </div>
           </div>
         )}
 
         {done && !loading && error && (
-          <div className="rounded-xl border border-destructive/40 bg-destructive/10 p-6 text-destructive">
+          <div className="card-brut bg-destructive/10 p-6 text-destructive">
             {error}
             <div className="mt-3">
-              <Button variant="outline" onClick={() => submit(answers)}>
+              <button
+                onClick={() => submit(answers)}
+                className="btn-brut bg-card px-4 py-2 font-semibold text-foreground"
+              >
                 Try again
-              </Button>
+              </button>
             </div>
           </div>
         )}
 
         {done && !loading && results && (
           <div>
-            <div className="mb-8 flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-primary" />
-              <h1 className="text-3xl font-bold tracking-tight">Your top matches</h1>
-            </div>
-            <div className="space-y-4">
-              {results.map((m) => (
-                <div
-                  key={m.career}
-                  className="rounded-2xl border border-border bg-card p-6"
-                  style={{ boxShadow: "var(--shadow-soft)" }}
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex items-start gap-4">
-                      <div className="text-4xl">{m.emoji}</div>
+            <span className="chip-ink"><Star className="h-3 w-3" strokeWidth={3}/> Results</span>
+            <h1 className="mt-4 font-display text-4xl font-extrabold sm:text-5xl">
+              Your top matches
+            </h1>
+            <div className="mt-8 space-y-4">
+              {results.map((m, i) => (
+                <div key={m.career} className="card-brut p-5">
+                  <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-[11px] font-bold text-foreground/50">
+                          #{i + 1}
+                        </span>
+                        <span className="text-2xl">{m.emoji}</span>
+                      </div>
+                      <div className="mt-1 font-display text-2xl font-bold">{m.career}</div>
+                      <p className="mt-2 text-sm text-foreground/70">{m.why}</p>
+                    </div>
+                    <div
+                      className="grid h-16 w-16 shrink-0 place-items-center rounded-md border-2 border-foreground text-center sm:h-20 sm:w-20"
+                      style={{ background: "var(--accent)" }}
+                    >
                       <div>
-                        <div className="text-xl font-semibold">{m.career}</div>
-                        <p className="mt-1 text-sm text-muted-foreground">{m.why}</p>
+                        <div className="font-display text-xl font-extrabold leading-none sm:text-2xl">
+                          {m.match}
+                        </div>
+                        <div className="font-mono text-[9px] font-bold uppercase tracking-widest">
+                          match
+                        </div>
                       </div>
                     </div>
-                    <div className="shrink-0 text-right">
-                      <div className="text-2xl font-bold text-primary">{m.match}%</div>
-                      <div className="text-xs text-muted-foreground">match</div>
-                    </div>
+                  </div>
+                  <div className="mt-4 h-2 w-full border border-foreground bg-card">
+                    <div className="h-full bg-primary" style={{ width: `${m.match}%` }} />
                   </div>
                 </div>
               ))}
             </div>
             <div className="mt-8 flex flex-wrap gap-3">
-              <Button asChild size="lg">
-                <Link to="/simulation">
-                  Try a Day in the Life <ArrowRight className="ml-1 h-4 w-4" />
-                </Link>
-              </Button>
-              <Button
-                variant="outline"
+              <Link
+                to="/simulation"
+                className="btn-brut inline-flex items-center gap-2 bg-primary px-5 py-3 font-semibold text-primary-foreground"
+              >
+                Try a Day in the Life <ArrowRight className="h-4 w-4" />
+              </Link>
+              <button
                 onClick={() => {
                   setStep(0);
                   setAnswers([]);
                   setResults(null);
                 }}
+                className="btn-brut bg-card px-5 py-3 font-semibold text-foreground"
               >
                 Retake quiz
-              </Button>
+              </button>
             </div>
           </div>
         )}

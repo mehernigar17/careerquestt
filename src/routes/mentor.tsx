@@ -1,9 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import { SiteHeader } from "@/components/site-header";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Loader2, Send, Sparkles } from "lucide-react";
+import { Loader2, Send } from "lucide-react";
 
 export const Route = createFileRoute("/mentor")({
   head: () => ({
@@ -25,11 +23,11 @@ export const Route = createFileRoute("/mentor")({
 });
 
 const mentors = [
-  { id: "engineer", label: "Senior Software Engineer", emoji: "💻" },
-  { id: "doctor", label: "Attending Physician", emoji: "🩺" },
-  { id: "designer", label: "Lead UX Designer", emoji: "🎨" },
-  { id: "lawyer", label: "Corporate Lawyer", emoji: "⚖️" },
-  { id: "pm", label: "Product Manager", emoji: "🧭" },
+  { id: "engineer", label: "Senior Software Engineer", tag: "SWE", color: "oklch(0.85 0.13 55)" },
+  { id: "doctor", label: "Attending Physician", tag: "MD", color: "oklch(0.85 0.13 145)" },
+  { id: "designer", label: "Lead UX Designer", tag: "UX", color: "oklch(0.85 0.13 320)" },
+  { id: "lawyer", label: "Corporate Lawyer", tag: "LAW", color: "oklch(0.85 0.13 240)" },
+  { id: "pm", label: "Product Manager", tag: "PM", color: "oklch(0.85 0.13 85)" },
 ];
 
 type Msg = { role: "user" | "assistant"; content: string };
@@ -93,63 +91,79 @@ function MentorPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-paper-grid">
       <SiteHeader />
-      <div className="mx-auto grid max-w-5xl gap-6 px-6 py-10 md:grid-cols-[240px_1fr]">
-        <aside className="space-y-2">
-          <div className="mb-2 flex items-center gap-2 text-sm font-semibold">
-            <Sparkles className="h-4 w-4 text-primary" />
-            Pick a mentor
+      <div className="mx-auto grid max-w-5xl gap-6 px-4 py-8 sm:px-6 sm:py-10 md:grid-cols-[260px_1fr]">
+        <aside>
+          <span className="chip-ink">Pick a mentor</span>
+          <div className="mt-3 space-y-2">
+            {mentors.map((m) => {
+              const active = mentor.id === m.id;
+              return (
+                <button
+                  key={m.id}
+                  onClick={() => switchMentor(m)}
+                  className={`card-brut flex w-full items-center gap-3 p-3 text-left transition ${
+                    active ? "translate-x-[-2px] translate-y-[-2px]" : ""
+                  }`}
+                  style={active ? { background: m.color, boxShadow: "var(--shadow-hard-lg)" } : {}}
+                >
+                  <span
+                    className="grid h-9 w-9 shrink-0 place-items-center rounded-md border-2 border-foreground font-mono text-[10px] font-bold"
+                    style={{ background: m.color }}
+                  >
+                    {m.tag}
+                  </span>
+                  <span className="min-w-0 truncate font-display text-sm font-semibold">
+                    {m.label}
+                  </span>
+                </button>
+              );
+            })}
           </div>
-          {mentors.map((m) => (
-            <button
-              key={m.id}
-              onClick={() => switchMentor(m)}
-              className={`flex w-full items-center gap-3 rounded-xl border-2 p-3 text-left text-sm transition ${
-                mentor.id === m.id
-                  ? "border-primary bg-primary/5"
-                  : "border-border bg-card hover:border-primary/40"
-              }`}
-            >
-              <span className="text-2xl">{m.emoji}</span>
-              <span className="font-medium">{m.label}</span>
-            </button>
-          ))}
         </aside>
 
-        <section className="flex h-[70vh] flex-col rounded-3xl border border-border bg-card">
-          <div className="border-b border-border p-4">
-            <div className="text-sm text-muted-foreground">Chatting with</div>
-            <div className="font-semibold">
-              {mentor.emoji} {mentor.label}
+        <section className="card-brut flex h-[75vh] min-h-[500px] flex-col overflow-hidden bg-card">
+          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b-2 border-foreground p-4">
+            <div className="min-w-0">
+              <div className="font-mono text-[10px] font-bold uppercase tracking-widest text-foreground/60">
+                Chatting with
+              </div>
+              <div className="truncate font-display text-lg font-bold">{mentor.label}</div>
             </div>
+            <span
+              className="grid h-10 w-10 shrink-0 place-items-center rounded-md border-2 border-foreground font-mono text-xs font-bold"
+              style={{ background: mentor.color }}
+            >
+              {mentor.tag}
+            </span>
           </div>
-          <div ref={listRef} className="flex-1 space-y-4 overflow-y-auto p-6">
+          <div ref={listRef} className="flex-1 space-y-4 overflow-y-auto p-4 sm:p-6">
             {messages.map((m, i) => (
               <div
                 key={i}
                 className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}
               >
-                <div
-                  className={`max-w-[80%] whitespace-pre-wrap rounded-2xl px-4 py-3 text-sm leading-relaxed ${
-                    m.role === "user"
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-secondary text-secondary-foreground"
-                  }`}
-                >
-                  {m.content}
-                </div>
+                {m.role === "user" ? (
+                  <div className="max-w-[85%] whitespace-pre-wrap rounded-lg border-2 border-foreground bg-primary px-4 py-2.5 text-sm font-medium leading-relaxed text-primary-foreground shadow-[3px_3px_0_0_var(--ink)]">
+                    {m.content}
+                  </div>
+                ) : (
+                  <div className="max-w-[90%] whitespace-pre-wrap text-sm leading-relaxed text-foreground">
+                    {m.content}
+                  </div>
+                )}
               </div>
             ))}
             {loading && (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-foreground/60">
                 <Loader2 className="h-4 w-4 animate-spin" /> Thinking…
               </div>
             )}
           </div>
-          <div className="border-t border-border p-3">
+          <div className="border-t-2 border-foreground bg-secondary/40 p-3">
             <div className="flex gap-2">
-              <Textarea
+              <textarea
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => {
@@ -159,11 +173,16 @@ function MentorPage() {
                   }
                 }}
                 placeholder="Ask about a typical day, hard moments, or how to break in…"
-                className="min-h-[44px] resize-none"
+                className="min-h-[48px] flex-1 resize-none rounded-md border-2 border-foreground bg-card px-3 py-2 text-sm outline-none focus:shadow-[3px_3px_0_0_var(--ink)]"
+                rows={2}
               />
-              <Button onClick={send} disabled={loading || !input.trim()} size="lg">
+              <button
+                onClick={send}
+                disabled={loading || !input.trim()}
+                className="btn-brut grid h-12 w-12 shrink-0 place-items-center self-end bg-primary text-primary-foreground disabled:opacity-40"
+              >
                 <Send className="h-4 w-4" />
-              </Button>
+              </button>
             </div>
           </div>
         </section>
