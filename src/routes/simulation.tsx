@@ -40,6 +40,7 @@ export const Route = createFileRoute("/simulation")({
 });
 
 type TaskType = "code" | "written" | "diagnosis" | "argument" | "plan";
+type Difficulty = "easy" | "medium" | "hard" | "expert";
 type Scene = {
   time: string;
   title: string;
@@ -49,6 +50,7 @@ type Scene = {
   prompt: string;   // the actual challenge
   starter?: string; // starter template
   rubric: string;   // what a good answer looks like (for AI grading)
+  difficulty: Difficulty;
 };
 type Grade = {
   score: number;      // 0-100 quality
