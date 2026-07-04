@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SimulationRouteImport } from './routes/simulation'
 import { Route as QuizRouteImport } from './routes/quiz'
+import { Route as MentorRouteImport } from './routes/mentor'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiAiRouteImport } from './routes/api/ai'
 
@@ -22,6 +23,11 @@ const SimulationRoute = SimulationRouteImport.update({
 const QuizRoute = QuizRouteImport.update({
   id: '/quiz',
   path: '/quiz',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MentorRoute = MentorRouteImport.update({
+  id: '/mentor',
+  path: '/mentor',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -37,12 +43,14 @@ const ApiAiRoute = ApiAiRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/mentor': typeof MentorRoute
   '/quiz': typeof QuizRoute
   '/simulation': typeof SimulationRoute
   '/api/ai': typeof ApiAiRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/mentor': typeof MentorRoute
   '/quiz': typeof QuizRoute
   '/simulation': typeof SimulationRoute
   '/api/ai': typeof ApiAiRoute
@@ -50,20 +58,22 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/mentor': typeof MentorRoute
   '/quiz': typeof QuizRoute
   '/simulation': typeof SimulationRoute
   '/api/ai': typeof ApiAiRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/quiz' | '/simulation' | '/api/ai'
+  fullPaths: '/' | '/mentor' | '/quiz' | '/simulation' | '/api/ai'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/quiz' | '/simulation' | '/api/ai'
-  id: '__root__' | '/' | '/quiz' | '/simulation' | '/api/ai'
+  to: '/' | '/mentor' | '/quiz' | '/simulation' | '/api/ai'
+  id: '__root__' | '/' | '/mentor' | '/quiz' | '/simulation' | '/api/ai'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  MentorRoute: typeof MentorRoute
   QuizRoute: typeof QuizRoute
   SimulationRoute: typeof SimulationRoute
   ApiAiRoute: typeof ApiAiRoute
@@ -85,6 +95,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof QuizRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/mentor': {
+      id: '/mentor'
+      path: '/mentor'
+      fullPath: '/mentor'
+      preLoaderRoute: typeof MentorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -104,6 +121,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  MentorRoute: MentorRoute,
   QuizRoute: QuizRoute,
   SimulationRoute: SimulationRoute,
   ApiAiRoute: ApiAiRoute,
@@ -111,3 +129,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
