@@ -61,7 +61,7 @@ type Grade = {
   feedback: string;   // 2-4 sentences, mentor-style, specific
   punishment?: string; // optional consequence line (e.g. "PR rejected", "malpractice review")
 };
-type Attempt = { scene: string; answer: string; grade: Grade };
+type Attempt = { scene: string; answer: string; grade: Grade; difficulty: Difficulty };
 
 const POPULAR_CAREERS = [
   "Software Engineer",
@@ -391,7 +391,7 @@ function Simulation({ career }: { career: string }) {
       setXp((v) => clamp(v + (g.xp ?? 0), 0, 9999));
       setStress((v) => clamp(v + (g.stress ?? 0), 0, 100));
       setSalary((v) => Math.max(0, v + (g.salary ?? 0)));
-      setLog((L) => [...L, { scene: currentScene.title, answer, grade: g }]);
+      setLog((L) => [...L, { scene: currentScene.title, answer, grade: g, difficulty: currentScene.difficulty }]);
     } catch (e) {
       setGradeError(e instanceof Error ? e.message : "Grading failed");
     } finally {
