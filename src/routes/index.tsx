@@ -13,6 +13,8 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
+// CareerQuest landing page — hero, trending careers, and quick-entry doors
+
 const trending = [
   { name: "Software Engineer", salary: "$95k", demand: "Very High", tag: "SWE" },
   { name: "UX Designer", salary: "$78k", demand: "High", tag: "UX" },
