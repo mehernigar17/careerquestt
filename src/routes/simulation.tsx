@@ -291,6 +291,8 @@ Return strict JSON:
           system: `You are an honest, exacting senior ${career}. You do not hand out participation trophies. Output only valid JSON.`,
           prompt: gradingPrompt,
           json: true,
+          model: "openai/gpt-5-mini",
+          fast: true,
         }),
       });
       if (!res.ok) throw new Error(await res.text());
