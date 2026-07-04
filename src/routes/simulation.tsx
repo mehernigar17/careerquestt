@@ -473,7 +473,16 @@ function Simulation({ career }: { career: string }) {
                 return <Icon className="h-4 w-4 text-accent" />;
               })()}
               {currentScene.time} · Scene {step + 1} / {scenes.length}
-              <span className="ml-auto rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-[10px] tracking-[0.1em] text-foreground/60">
+              <span
+                className="ml-auto rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.15em]"
+                style={{
+                  borderColor: difficultyMeta[currentScene.difficulty].color,
+                  color: difficultyMeta[currentScene.difficulty].color,
+                }}
+              >
+                {difficultyMeta[currentScene.difficulty].label}
+              </span>
+              <span className="rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-[10px] tracking-[0.1em] text-foreground/60">
                 {currentScene.taskType}{currentScene.language ? ` · ${currentScene.language}` : ""}
               </span>
             </div>
