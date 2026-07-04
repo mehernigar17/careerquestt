@@ -1,13 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { SiteHeader } from "@/components/site-header";
 import {
-  ArrowRight,
+  ArrowUpRight,
   Brain,
   Gamepad2,
   GraduationCap,
   Rocket,
-  Star,
-  Zap,
+  Sparkles,
 } from "lucide-react";
 
 export const Route = createFileRoute("/")({
@@ -30,80 +29,77 @@ const futureJobs = [
   { year: "2035", title: "Space Logistics Manager", note: "Supply chains beyond Earth." },
 ];
 
+const doors = [
+  { label: "Software Engineer", tag: "SWE", grad: "linear-gradient(135deg, oklch(0.65 0.2 265), oklch(0.72 0.18 200))" },
+  { label: "Doctor", tag: "MD", grad: "linear-gradient(135deg, oklch(0.72 0.2 340), oklch(0.68 0.22 20))" },
+  { label: "UX Designer", tag: "UX", grad: "linear-gradient(135deg, oklch(0.72 0.19 295), oklch(0.78 0.15 200))" },
+  { label: "Lawyer", tag: "LAW", grad: "linear-gradient(135deg, oklch(0.6 0.15 250), oklch(0.5 0.1 265))" },
+];
+
 function Index() {
   return (
-    <div className="min-h-screen bg-paper-grid">
+    <div className="min-h-screen bg-aurora">
       <SiteHeader />
 
-      {/* HERO — editorial magazine style */}
-      <section className="mx-auto max-w-6xl px-4 pt-10 pb-16 sm:px-6 sm:pt-16">
-        <span className="chip-ink">
-          <Zap className="h-3 w-3" strokeWidth={3} /> Career Simulator · v1.0
+      {/* HERO */}
+      <section className="relative mx-auto max-w-6xl px-4 pt-16 pb-20 sm:px-6 sm:pt-24">
+        <span className="chip-glass">
+          <Sparkles className="h-3 w-3" /> AI Career Simulator
         </span>
 
-        <h1 className="mt-6 font-display text-[13vw] font-extrabold leading-[0.9] tracking-tighter sm:text-7xl md:text-8xl">
-          Don't <span className="italic">guess</span>
+        <h1 className="mt-6 font-display text-5xl leading-[1.02] tracking-tight sm:text-7xl md:text-[88px]">
+          Don't <em className="text-gradient">guess</em> your future.
           <br />
-          your future.
-          <br />
-          <span className="relative inline-block">
-            <span className="relative z-10 text-primary-foreground">Live it.</span>
-            <span
-              aria-hidden
-              className="absolute inset-x-[-8px] inset-y-[6px] -z-0 rounded-md bg-primary"
-              style={{ transform: "rotate(-2deg)" }}
-            />
-          </span>
+          <span className="text-foreground/60">Step inside it.</span>
         </h1>
 
-        <div className="mt-8 grid gap-8 md:grid-cols-[minmax(0,1fr)_320px] md:items-end">
+        <div className="mt-10 grid gap-10 md:grid-cols-[minmax(0,1fr)_320px] md:items-end">
           <p className="max-w-xl text-base leading-relaxed text-foreground/70 sm:text-lg">
-            Step into a virtual day inside real careers. Make decisions, feel the stress,
-            earn XP, level up — and find the path that <em>actually</em> fits you. No
-            more career quizzes that just ask if you like dogs.
+            A day inside real careers — decisions, stress, salary, mentorship. Live the role
+            before you pick it. Powered by an AI that adapts every scene to the career you're
+            exploring.
           </p>
           <div className="flex flex-wrap gap-3">
             <Link
               to="/quiz"
-              className="btn-brut inline-flex items-center gap-2 bg-primary px-5 py-3 font-semibold text-primary-foreground"
+              className="btn-primary-grad inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold"
             >
-              Take the Quiz <ArrowRight className="h-4 w-4" />
+              Take the AI quiz <ArrowUpRight className="h-4 w-4" />
             </Link>
             <Link
               to="/simulation"
-              className="btn-brut inline-flex items-center gap-2 bg-card px-5 py-3 font-semibold text-foreground"
+              search={{ career: "Software Engineer" }}
+              className="btn-ghost-glass inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold"
             >
-              Try a Day →
+              Try a live day
             </Link>
           </div>
         </div>
 
-        {/* Career doors — brutalist cards */}
-        <div className="mt-14 grid grid-cols-2 gap-4 md:grid-cols-4">
-          {[
-            { label: "Engineer", tag: "SWE", color: "oklch(0.85 0.13 55)" },
-            { label: "Doctor", tag: "MD", color: "oklch(0.85 0.13 145)" },
-            { label: "Designer", tag: "UX", color: "oklch(0.85 0.13 320)" },
-            { label: "Lawyer", tag: "LAW", color: "oklch(0.85 0.13 240)" },
-          ].map((d, i) => (
+        {/* Career doors */}
+        <div className="mt-16 grid grid-cols-2 gap-4 md:grid-cols-4">
+          {doors.map((d, i) => (
             <Link
               key={d.label}
               to="/simulation"
-              className="card-brut card-brut-hover group flex flex-col justify-between p-5"
-              style={{ background: d.color, minHeight: 160 }}
+              search={{ career: d.label }}
+              className="glass-card glass-card-hover group relative overflow-hidden p-5"
+              style={{ minHeight: 180 }}
             >
-              <span className="font-mono text-xs font-bold text-foreground/70">
-                #{String(i + 1).padStart(2, "0")}
-              </span>
-              <div>
-                <div className="font-mono text-[11px] font-bold tracking-widest text-foreground/60">
-                  {d.tag}
-                </div>
-                <div className="mt-1 font-display text-2xl font-extrabold">
-                  {d.label}
-                </div>
-                <div className="mt-3 flex items-center gap-1 text-xs font-medium">
-                  Open door <ArrowRight className="h-3 w-3 transition group-hover:translate-x-1" />
+              <div
+                aria-hidden
+                className="absolute inset-x-0 top-0 h-24 opacity-70"
+                style={{ background: d.grad, filter: "blur(30px)", transform: "translateY(-40%)" }}
+              />
+              <div className="relative flex h-full flex-col justify-between">
+                <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/50">
+                  0{i + 1} · {d.tag}
+                </span>
+                <div>
+                  <div className="font-display text-2xl">{d.label}</div>
+                  <div className="mt-3 flex items-center gap-1.5 text-xs text-foreground/60">
+                    Enter the day <ArrowUpRight className="h-3.5 w-3.5 transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                  </div>
                 </div>
               </div>
             </Link>
@@ -111,124 +107,122 @@ function Index() {
         </div>
       </section>
 
-      {/* How it works */}
-      <section className="border-y-2 border-foreground bg-foreground text-background">
-        <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6">
-          <div className="flex items-center gap-3">
-            <div className="h-2 w-8 bg-primary" />
-            <span className="font-mono text-xs font-bold uppercase tracking-widest text-background/70">
-              The Loop
-            </span>
-          </div>
-          <h2 className="mt-3 font-display text-4xl font-extrabold sm:text-5xl">
-            Four steps. One clear future.
-          </h2>
-          <div className="mt-10 grid gap-4 md:grid-cols-4">
-            {[
-              { n: "01", icon: Brain, title: "AI Quiz", body: "How you think — not what you like." },
-              { n: "02", icon: Rocket, title: "Get matched", body: "Careers ranked by real fit." },
-              { n: "03", icon: Gamepad2, title: "Simulate", body: "Real scenarios. Real trade-offs." },
-              { n: "04", icon: GraduationCap, title: "Learn", body: "A weekly roadmap of skills." },
-            ].map((s) => (
-              <div key={s.title} className="border-2 border-background/20 p-5">
-                <div className="flex items-center justify-between">
-                  <s.icon className="h-5 w-5 text-primary" strokeWidth={2.5} />
-                  <span className="font-mono text-xs text-background/50">{s.n}</span>
-                </div>
-                <div className="mt-4 font-display text-xl font-bold">{s.title}</div>
-                <p className="mt-1 text-sm text-background/70">{s.body}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <div className="mx-auto max-w-6xl px-4 sm:px-6"><div className="divider-glow" /></div>
 
-      {/* Trending careers */}
-      <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-        <div className="flex items-end justify-between gap-4">
-          <div>
-            <span className="chip-ink">
-              <Star className="h-3 w-3" strokeWidth={3} /> Hot Right Now
-            </span>
-            <h2 className="mt-4 font-display text-4xl font-extrabold sm:text-5xl">
-              Trending careers
-            </h2>
-          </div>
-          <Link to="/quiz" className="hidden shrink-0 font-semibold underline decoration-primary decoration-[3px] underline-offset-4 sm:block">
-            Find yours →
-          </Link>
+      {/* How it works */}
+      <section className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
+        <div className="max-w-2xl">
+          <span className="chip-glass">The Loop</span>
+          <h2 className="mt-5 font-display text-4xl leading-tight sm:text-5xl">
+            Four steps.<br />
+            <em className="text-gradient">One clear</em> future.
+          </h2>
         </div>
-        <div className="mt-8 grid gap-4 md:grid-cols-3">
-          {trending.map((c, i) => (
-            <div key={c.name} className="card-brut card-brut-hover p-5">
+        <div className="mt-12 grid gap-4 md:grid-cols-4">
+          {[
+            { n: "01", icon: Brain, title: "AI Quiz", body: "How you think — not what you like." },
+            { n: "02", icon: Rocket, title: "Get matched", body: "Careers ranked by real fit." },
+            { n: "03", icon: Gamepad2, title: "Simulate", body: "Real scenarios. Real trade-offs." },
+            { n: "04", icon: GraduationCap, title: "Learn", body: "A weekly roadmap of skills." },
+          ].map((s) => (
+            <div key={s.title} className="glass-card p-6">
               <div className="flex items-center justify-between">
-                <span className="font-mono text-[11px] font-bold tracking-widest text-foreground/60">
-                  {c.tag}
-                </span>
-                <span className="font-mono text-xs text-foreground/40">
-                  #{String(i + 1).padStart(2, "0")}
-                </span>
-              </div>
-              <div className="mt-3 font-display text-2xl font-bold">{c.name}</div>
-              <div className="mt-6 flex items-end justify-between border-t border-dashed border-foreground/20 pt-3">
-                <div>
-                  <div className="font-mono text-[10px] uppercase tracking-widest text-foreground/50">
-                    Avg. Salary
-                  </div>
-                  <div className="font-display text-xl font-bold">{c.salary}</div>
-                </div>
                 <span
-                  className="rounded-full border-2 border-foreground px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest"
-                  style={{ background: "var(--accent)" }}
+                  className="grid h-9 w-9 place-items-center rounded-lg"
+                  style={{ background: "var(--grad-cool)" }}
                 >
-                  {c.demand}
+                  <s.icon className="h-4 w-4 text-background" strokeWidth={2.5} />
                 </span>
+                <span className="font-mono text-xs text-foreground/40">{s.n}</span>
               </div>
+              <div className="mt-6 font-display text-2xl">{s.title}</div>
+              <p className="mt-2 text-sm text-foreground/60">{s.body}</p>
             </div>
           ))}
         </div>
       </section>
 
+      {/* Trending careers */}
+      <section className="mx-auto max-w-6xl px-4 pb-20 sm:px-6">
+        <div className="flex items-end justify-between gap-4">
+          <div>
+            <span className="chip-glass">Trending</span>
+            <h2 className="mt-5 font-display text-4xl leading-tight sm:text-5xl">
+              Careers people are <em className="text-gradient">simulating</em> right now
+            </h2>
+          </div>
+        </div>
+        <div className="mt-10 grid gap-4 md:grid-cols-3">
+          {trending.map((c, i) => (
+            <Link
+              key={c.name}
+              to="/simulation"
+              search={{ career: c.name }}
+              className="glass-card glass-card-hover group p-6"
+            >
+              <div className="flex items-center justify-between">
+                <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/50">
+                  {c.tag}
+                </span>
+                <span className="font-mono text-xs text-foreground/30">0{i + 1}</span>
+              </div>
+              <div className="mt-4 font-display text-2xl">{c.name}</div>
+              <div className="mt-6 flex items-end justify-between border-t border-white/5 pt-4">
+                <div>
+                  <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/40">
+                    Avg. Salary
+                  </div>
+                  <div className="mt-1 font-display text-2xl">{c.salary}</div>
+                </div>
+                <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.15em] text-accent">
+                  {c.demand}
+                </span>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
+
       {/* Future jobs */}
-      <section className="mx-auto max-w-6xl px-4 pb-16 sm:px-6">
-        <span className="chip-ink">Future Timeline · 2028–2035</span>
-        <h2 className="mt-4 font-display text-4xl font-extrabold sm:text-5xl">
-          Jobs your school<br />hasn't heard of.
+      <section className="mx-auto max-w-6xl px-4 pb-20 sm:px-6">
+        <span className="chip-glass">2028 — 2035</span>
+        <h2 className="mt-5 font-display text-4xl leading-tight sm:text-5xl">
+          Jobs your school <em className="text-gradient">hasn't heard of</em>.
         </h2>
-        <div className="mt-8 space-y-3">
+        <div className="mt-10 space-y-3">
           {futureJobs.map((j) => (
             <div
               key={j.title}
-              className="card-brut grid grid-cols-[auto_minmax(0,1fr)] items-center gap-4 p-4 sm:grid-cols-[80px_minmax(0,1fr)_auto] sm:gap-6 sm:p-5"
+              className="glass-card grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-5 p-5"
             >
               <div
-                className="grid h-14 w-14 shrink-0 place-items-center rounded-md border-2 border-foreground font-mono text-sm font-bold sm:h-16 sm:w-20"
-                style={{ background: "var(--coin)" }}
+                className="grid h-14 w-16 shrink-0 place-items-center rounded-lg font-mono text-sm font-semibold text-background"
+                style={{ background: "var(--grad-warm)" }}
               >
                 {j.year}
               </div>
               <div className="min-w-0">
-                <div className="font-display text-xl font-bold sm:text-2xl">{j.title}</div>
+                <div className="font-display text-xl sm:text-2xl">{j.title}</div>
                 <p className="text-sm text-foreground/60">{j.note}</p>
               </div>
-              <ArrowRight className="hidden shrink-0 text-foreground/40 sm:block" />
+              <ArrowUpRight className="hidden h-5 w-5 shrink-0 text-foreground/40 sm:block" />
             </div>
           ))}
         </div>
       </section>
 
       {/* Stats */}
-      <section className="mx-auto max-w-6xl px-4 pb-16 sm:px-6">
-        <div className="card-brut grid grid-cols-2 divide-foreground bg-primary text-primary-foreground md:grid-cols-4 md:divide-x-2">
+      <section className="mx-auto max-w-6xl px-4 pb-20 sm:px-6">
+        <div className="glass-card grid grid-cols-2 divide-white/5 md:grid-cols-4 md:divide-x">
           {[
             { n: "500+", l: "scenarios" },
             { n: "40", l: "careers" },
             { n: "92%", l: "quiz accuracy" },
             { n: "1M+", l: "XP earned" },
           ].map((s) => (
-            <div key={s.l} className="p-6 text-center">
-              <div className="font-display text-4xl font-extrabold sm:text-5xl">{s.n}</div>
-              <div className="mt-1 font-mono text-[11px] uppercase tracking-widest opacity-80">
+            <div key={s.l} className="p-8 text-center">
+              <div className="font-display text-4xl sm:text-5xl text-gradient">{s.n}</div>
+              <div className="mt-2 font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/50">
                 {s.l}
               </div>
             </div>
@@ -237,20 +231,21 @@ function Index() {
       </section>
 
       {/* Final CTA */}
-      <section className="mx-auto max-w-4xl px-4 py-20 text-center sm:px-6">
-        <h2 className="font-display text-4xl font-extrabold sm:text-6xl">
-          Two minutes of quiz.<br />
-          <span className="italic text-primary">A lifetime</span> of clarity.
+      <section className="mx-auto max-w-4xl px-4 py-24 text-center sm:px-6">
+        <h2 className="font-display text-4xl leading-tight sm:text-6xl">
+          Two minutes of quiz.
+          <br />
+          <em className="text-gradient">A lifetime</em> of clarity.
         </h2>
         <Link
           to="/quiz"
-          className="btn-brut mt-8 inline-flex items-center gap-2 bg-foreground px-6 py-4 font-semibold text-background"
+          className="btn-primary-grad mt-10 inline-flex items-center gap-2 px-8 py-4 text-sm font-semibold"
         >
-          Start the quiz <ArrowRight className="h-4 w-4" />
+          Start the quiz <ArrowUpRight className="h-4 w-4" />
         </Link>
       </section>
 
-      <footer className="border-t-2 border-foreground bg-foreground py-6 text-center font-mono text-xs uppercase tracking-widest text-background/60">
+      <footer className="border-t border-white/5 py-8 text-center font-mono text-[11px] uppercase tracking-[0.2em] text-foreground/40">
         CareerQuest · Experience your future
       </footer>
     </div>
