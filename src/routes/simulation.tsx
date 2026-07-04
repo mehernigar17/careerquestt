@@ -39,8 +39,27 @@ export const Route = createFileRoute("/simulation")({
   component: SimPage,
 });
 
-type Choice = { label: string; xp: number; stress: number; salary: number; feedback: string };
-type Scene = { time: string; title: string; body: string; choices: Choice[] };
+type TaskType = "code" | "written" | "diagnosis" | "argument" | "plan";
+type Scene = {
+  time: string;
+  title: string;
+  body: string;
+  taskType: TaskType;
+  language?: string; // for code tasks: javascript | python | sql | typescript
+  prompt: string;   // the actual challenge
+  starter?: string; // starter template
+  rubric: string;   // what a good answer looks like (for AI grading)
+};
+type Grade = {
+  score: number;      // 0-100 quality
+  xp: number;         // -30..+120
+  stress: number;     // -20..+40
+  salary: number;     // usually 0, occasionally +50..+500 or negative
+  verdict: "excellent" | "good" | "okay" | "poor" | "failed";
+  feedback: string;   // 2-4 sentences, mentor-style, specific
+  punishment?: string; // optional consequence line (e.g. "PR rejected", "malpractice review")
+};
+type Attempt = { scene: string; answer: string; grade: Grade };
 
 const POPULAR_CAREERS = [
   "Software Engineer",
@@ -158,39 +177,61 @@ function Simulation({ career }: { career: string }) {
   const [xp, setXp] = useState(50);
   const [stress, setStress] = useState(25);
   const [salary, setSalary] = useState(baseSalary(career));
-  const [log, setLog] = useState<{ scene: string; choice: string; feedback: string }[]>([]);
+  const [log, setLog] = useState<Attempt[]>([]);
+  const [answer, setAnswer] = useState("");
+  const [grading, setGrading] = useState(false);
+  const [gradeError, setGradeError] = useState<string | null>(null);
+  const [lastGrade, setLastGrade] = useState<Grade | null>(null);
   const [summary, setSummary] = useState<string | null>(null);
   const [summaryLoading, setSummaryLoading] = useState(false);
 
   const level = useMemo(() => levelFor(xp, career), [xp, career]);
   const done = scenes !== null && step >= scenes.length;
+  const currentScene = scenes && !done ? scenes[step] : null;
+
+  useEffect(() => {
+    if (currentScene) setAnswer(currentScene.starter ?? "");
+    setLastGrade(null);
+    setGradeError(null);
+  }, [step, scenes]);
 
   useEffect(() => {
     let cancelled = false;
     async function gen() {
       setGenError(null);
       try {
-        const prompt = `Generate an authentic, realistic "day in the life" simulation for a ${career}. Return strict JSON.
+        const prompt = `Generate a realistic "day in the life" simulation for a ${career} where the user must ACTUALLY SOLVE each problem (not pick from options). Return strict JSON.
 
 Shape:
 {"scenes":[
-  {"time":"9:00 AM","title":"...","body":"2-3 sentences setting the scene concretely for this specific career","choices":[
-    {"label":"specific action","xp":40,"stress":15,"salary":0,"feedback":"1 sentence outcome"},
-    ... 3-4 choices total, with mixed trade-offs. Some negative xp/stress allowed. Only rarely salary changes.
-  ]},
-  ... exactly 4 scenes covering morning, midday, afternoon, evening
+  {
+    "time":"9:00 AM",
+    "title":"short specific problem title",
+    "body":"2-4 sentences giving concrete context — real tools, real jargon, real stakes for a ${career}",
+    "taskType":"code" | "written" | "diagnosis" | "argument" | "plan",
+    "language":"javascript" | "python" | "sql" | "typescript",   // required ONLY when taskType is "code"
+    "prompt":"the exact task to complete — a coding problem to solve, a case to diagnose, a legal argument to write, a design plan to describe. Be concrete and self-contained.",
+    "starter":"optional starter code / template / prompt scaffold the user can edit",
+    "rubric":"what a strong answer must demonstrate — used later to grade the user"
+  },
+  ... exactly 4 scenes for morning, midday, afternoon, evening
 ]}
 
-Rules:
-- Scenarios must be SPECIFIC to a ${career} — use real jargon, tools, situations from this profession, not generic office stuff.
-- Each scene should feel like an authentic dilemma this person actually faces.
-- xp integers -30 to 100, stress integers -20 to 40, salary usually 0 (occasionally +50 to +300).
-- 4 scenes, 3-4 choices each. No emojis. No markdown.`;
+Rules by career:
+- Software Engineer / Data Scientist / anything technical: taskType="code" with a real algorithm/bug/query challenge. Include starter code.
+- Doctor: taskType="diagnosis" — a real patient case (symptoms, vitals, history). User writes differential + plan.
+- Lawyer: taskType="argument" — a client fact pattern. User writes their legal argument or advice.
+- UX Designer: taskType="written" or "plan" — a real design brief. User describes their approach and key decisions.
+- Teacher: taskType="plan" — a real classroom situation. User writes their lesson/response plan.
+- Product Manager: taskType="written" — a real trade-off memo the user must write.
+- Other: pick the best taskType.
+
+Every scene must be a REAL problem the user solves by typing, not a multiple choice. Vary difficulty across the day. Use profession-specific detail (frameworks, drugs, statutes, laws, methodologies). No emojis, no markdown.`;
         const res = await fetch("/api/ai", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            system: `You write realistic, career-specific day-in-the-life simulations. Output only valid JSON, no prose, no markdown.`,
+            system: `You are a senior ${career} who designs realistic on-the-job challenges. Output only valid JSON.`,
             prompt,
             json: true,
           }),
@@ -209,12 +250,65 @@ Rules:
     };
   }, [career]);
 
-  function apply(c: Choice) {
-    if (!scenes) return;
-    setXp((v) => clamp(v + c.xp, 0, 9999));
-    setStress((v) => clamp(v + c.stress, 0, 100));
-    setSalary((v) => Math.max(0, v + c.salary));
-    setLog((L) => [...L, { scene: scenes[step].title, choice: c.label, feedback: c.feedback }]);
+  async function submitAnswer() {
+    if (!currentScene || !answer.trim() || grading) return;
+    setGrading(true);
+    setGradeError(null);
+    try {
+      const gradingPrompt = `You are a strict but fair senior ${career} grading a junior's attempt on this real task.
+
+TASK:
+${currentScene.prompt}
+
+STARTER (if any) — do not count the untouched starter as the user's work:
+${currentScene.starter ?? "(none)"}
+
+WHAT A STRONG ANSWER LOOKS LIKE:
+${currentScene.rubric}
+
+THE USER'S ANSWER:
+"""
+${answer}
+"""
+
+Grade harshly and honestly like a real senior would. If the answer is empty, gibberish, off-topic, or clearly not attempting the task, treat as "failed" with low score, negative xp, high stress, and a real punishment (e.g. "PR rejected by review", "Attending overruled your call", "Client fired the firm").
+If it's a genuine strong attempt, reward with high xp and possibly a small salary bump.
+
+Return strict JSON:
+{
+  "score": 0-100,
+  "xp": integer between -40 and 120,
+  "stress": integer between -25 and 45,
+  "salary": integer usually 0, occasionally between -200 and +600 for standout work or major screw-ups,
+  "verdict": "excellent" | "good" | "okay" | "poor" | "failed",
+  "feedback": "2-4 sentences of specific mentor feedback — call out concrete things in the answer",
+  "punishment": "optional 1-line real-world consequence when verdict is poor or failed, otherwise omit"
+}`;
+      const res = await fetch("/api/ai", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          system: `You are an honest, exacting senior ${career}. You do not hand out participation trophies. Output only valid JSON.`,
+          prompt: gradingPrompt,
+          json: true,
+        }),
+      });
+      if (!res.ok) throw new Error(await res.text());
+      const { content } = (await res.json()) as { content: string };
+      const g = JSON.parse(content) as Grade;
+      setLastGrade(g);
+      setXp((v) => clamp(v + (g.xp ?? 0), 0, 9999));
+      setStress((v) => clamp(v + (g.stress ?? 0), 0, 100));
+      setSalary((v) => Math.max(0, v + (g.salary ?? 0)));
+      setLog((L) => [...L, { scene: currentScene.title, answer, grade: g }]);
+    } catch (e) {
+      setGradeError(e instanceof Error ? e.message : "Grading failed");
+    } finally {
+      setGrading(false);
+    }
+  }
+
+  function nextScene() {
     setStep((s) => s + 1);
   }
 
@@ -226,8 +320,8 @@ Rules:
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          system: `You are a warm, experienced senior ${career} mentoring a curious student. In 3-4 short sentences, reflect on their day. Highlight one strength and one honest area to grow. No bullet points, no lists.`,
-          prompt: `Career: ${career}\nFinal XP: ${xp}\nStress: ${stress}/100\nSalary: $${salary}/mo\nLevel: ${level.name}\n\nDecisions:\n${log.map((l) => `- ${l.scene}: chose "${l.choice}"`).join("\n")}`,
+          system: `You are a warm, experienced senior ${career} mentoring a curious student. In 3-5 short sentences, reflect on their day — reference their actual work quality. Highlight one strength and one honest area to grow. No bullet points, no lists.`,
+          prompt: `Career: ${career}\nFinal XP: ${xp}\nStress: ${stress}/100\nSalary: $${salary}/mo\nLevel: ${level.name}\n\nAttempts:\n${log.map((l) => `- ${l.scene}: verdict=${l.grade.verdict} (score ${l.grade.score}/100)`).join("\n")}`,
         }),
       });
       const { content } = (await res.json()) as { content: string };
@@ -246,6 +340,8 @@ Rules:
     setSalary(baseSalary(career));
     setLog([]);
     setSummary(null);
+    setLastGrade(null);
+    setAnswer("");
   }
 
   return (
