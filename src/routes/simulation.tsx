@@ -131,6 +131,7 @@ function buildFastScenes(career: string): Scene[] {
         title: "Fix the failing production path",
         body: `A dashboard used by customers is showing stale results. As the ${career}, you need to find the bad logic quickly without breaking the happy path.`,
         taskType: "code",
+        difficulty: "easy",
         language: career.toLowerCase().includes("data") ? "sql" : "typescript",
         prompt: career.toLowerCase().includes("data")
           ? "Write a SQL query that returns each active user's latest completed order, including users with no completed orders. Explain any edge case you handle."
@@ -145,6 +146,7 @@ function buildFastScenes(career: string): Scene[] {
         title: "Review a risky change",
         body: "A teammate wants to ship a shortcut before lunch. The change looks small, but it touches authentication, cache behavior, and user-visible state.",
         taskType: "code",
+        difficulty: "medium",
         language: "typescript",
         prompt: "List the risks you would check before approving this change, then write one guard or test that would catch the most dangerous failure.",
         starter: "// Write your review notes and a small test/guard here",
@@ -155,6 +157,7 @@ function buildFastScenes(career: string): Scene[] {
         title: "Design the next API endpoint",
         body: `Product needs a new endpoint today. The ${career} team cares about latency, validation, permissions, and future maintenance.`,
         taskType: "plan",
+        difficulty: "hard",
         prompt: "Design the endpoint contract, validation rules, error states, and rollout plan. Be specific about request/response shape and failure handling.",
         rubric: "Covers contract, validation, authorization, observability, failure cases, and safe rollout trade-offs.",
       },
@@ -163,6 +166,7 @@ function buildFastScenes(career: string): Scene[] {
         title: "Explain the incident clearly",
         body: "A non-technical stakeholder asks what happened and what will prevent it next time. They need a clear answer without blame or jargon overload.",
         taskType: "written",
+        difficulty: "expert",
         prompt: "Write a short incident update with cause, user impact, fix, prevention, and next check-in. Keep it professional and concrete.",
         rubric: "Clear communication, accountability, accurate impact, realistic prevention, and calm professional tone.",
       },
@@ -179,6 +183,7 @@ function buildFastScenes(career: string): Scene[] {
           ? "A client brings an urgent dispute with messy facts, missing documents, and a deadline today. Your first advice will shape the whole matter."
           : `Your inbox is full and two people need opposite things from you. As the ${career}, you have to decide what matters first and why.`,
       taskType,
+      difficulty: "easy",
       prompt: diagnostic
         ? "Write your differential diagnosis, the first three questions/tests you would prioritize, and the immediate management plan."
         : legal
@@ -191,6 +196,7 @@ function buildFastScenes(career: string): Scene[] {
       title: "Handle a difficult stakeholder",
       body: `Someone senior challenges your recommendation in front of the room. You need to defend the work without becoming defensive.`,
       taskType: legal ? "argument" : "written",
+      difficulty: "medium",
       prompt: "Write your response. Include the evidence you rely on, the trade-off you accept, and the next step you recommend.",
       rubric: "Professional tone, evidence-based reasoning, acknowledgement of uncertainty, and a concrete next step.",
     },
@@ -199,6 +205,7 @@ function buildFastScenes(career: string): Scene[] {
       title: planning ? "Build the execution plan" : "Make the judgment call",
       body: `The easy answer is not the responsible answer. Your choice affects quality, trust, timeline, and someone else's workload.`,
       taskType: planning ? "plan" : taskType,
+      difficulty: "hard",
       prompt: "Create the plan or decision memo. State your goal, constraints, options considered, recommendation, and success metric.",
       rubric: "Specific goal, realistic constraints, thoughtful options, clear recommendation, and measurable success criteria.",
     },
@@ -207,6 +214,7 @@ function buildFastScenes(career: string): Scene[] {
       title: "Close the day with accountability",
       body: `The work is not perfect, but the day is ending. A strong ${career} leaves a clean handoff and shows what changed.`,
       taskType: "written",
+      difficulty: "expert",
       prompt: "Write the end-of-day update to your team or client. Include progress, unresolved risks, decisions made, and tomorrow's first action.",
       rubric: "Concise status, honest risk framing, useful handoff detail, and clear ownership of the next step.",
     },
