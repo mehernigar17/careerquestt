@@ -602,3 +602,68 @@ function Badge({
     </span>
   );
 }
+
+const verdictMeta: Record<Grade["verdict"], { label: string; color: string; bg: string }> = {
+  excellent: { label: "Excellent", color: "oklch(0.85 0.15 145)", bg: "oklch(0.85 0.15 145 / 0.12)" },
+  good:      { label: "Good",      color: "oklch(0.78 0.17 175)", bg: "oklch(0.78 0.17 175 / 0.12)" },
+  okay:      { label: "Okay",      color: "oklch(0.85 0.15 90)",  bg: "oklch(0.85 0.15 90 / 0.12)" },
+  poor:      { label: "Poor",      color: "oklch(0.78 0.19 40)",  bg: "oklch(0.78 0.19 40 / 0.14)" },
+  failed:    { label: "Failed",    color: "oklch(0.7 0.22 20)",   bg: "oklch(0.7 0.22 20 / 0.15)" },
+};
+
+function VerdictPill({ verdict, score }: { verdict: Grade["verdict"]; score: number }) {
+  const m = verdictMeta[verdict] ?? verdictMeta.okay;
+  return (
+    <span
+      className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-[0.15em]"
+      style={{ borderColor: m.color, color: m.color, background: m.bg }}
+    >
+      {m.label} · {score}
+    </span>
+  );
+}
+
+function GradeCard({
+  grade,
+  onNext,
+  lastStep,
+}: {
+  grade: Grade;
+  onNext: () => void;
+  lastStep: boolean;
+}) {
+  const m = verdictMeta[grade.verdict] ?? verdictMeta.okay;
+  return (
+    <div
+      className="mt-6 rounded-xl border p-5"
+      style={{ borderColor: m.color, background: m.bg }}
+    >
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <VerdictPill verdict={grade.verdict} score={grade.score} />
+        <div className="flex flex-wrap gap-1.5">
+          <Badge tone="xp">{grade.xp >= 0 ? `+${grade.xp}` : grade.xp} XP</Badge>
+          <Badge tone={grade.stress > 0 ? "stress" : "calm"}>
+            {grade.stress >= 0 ? `+${grade.stress}` : grade.stress} stress
+          </Badge>
+          {grade.salary !== 0 && (
+            <Badge tone={grade.salary > 0 ? "coin" : "stress"}>
+              {grade.salary > 0 ? `+$${grade.salary}` : `-$${Math.abs(grade.salary)}`}
+            </Badge>
+          )}
+        </div>
+      </div>
+      <p className="mt-3 text-sm leading-relaxed text-foreground/90">{grade.feedback}</p>
+      {grade.punishment && (
+        <p className="mt-2 text-sm font-medium text-destructive">⚠ {grade.punishment}</p>
+      )}
+      <div className="mt-4">
+        <button
+          onClick={onNext}
+          className="btn-primary-grad inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold"
+        >
+          {lastStep ? "Finish the day" : "Next scene"} <ArrowUpRight className="h-4 w-4" />
+        </button>
+      </div>
+    </div>
+  );
+}
