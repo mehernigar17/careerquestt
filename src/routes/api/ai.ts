@@ -5,6 +5,8 @@ type Body = {
   prompt?: string;
   messages?: Array<{ role: "user" | "assistant" | "system"; content: string }>;
   json?: boolean;
+  model?: string;
+  fast?: boolean;
 };
 
 export const Route = createFileRoute("/api/ai")({
@@ -34,9 +36,10 @@ export const Route = createFileRoute("/api/ai")({
             "Lovable-API-Key": key,
           },
           body: JSON.stringify({
-            model: "google/gemini-3-flash-preview",
+            model: body.model ?? "google/gemini-3-flash-preview",
             messages,
             ...(body.json ? { response_format: { type: "json_object" } } : {}),
+            ...(body.fast ? { service_tier: "priority" } : {}),
           }),
         });
 
