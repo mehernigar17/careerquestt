@@ -1,8 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { SiteHeader } from "@/components/site-header";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 import {
   ArrowRight,
   Coffee,
@@ -183,72 +181,80 @@ function SimPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-paper-grid">
       <SiteHeader />
-      <div className="mx-auto max-w-5xl px-6 py-10">
-        {/* Dashboard */}
-        <div
-          className="rounded-3xl p-6 text-primary-foreground"
-          style={{ background: "var(--gradient-hero)", boxShadow: "var(--shadow-glow)" }}
-        >
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div>
-              <div className="text-xs uppercase tracking-widest opacity-70">Career</div>
-              <div className="text-2xl font-bold">Software Engineer</div>
-              <div className="mt-1 text-sm opacity-90">Level: {level.name}</div>
-            </div>
-            <div className="flex gap-6 text-sm">
-              <Stat label="XP" value={`${xp}/${level.next}`} />
-              <Stat label="Stress" value={`${stress}/100`} />
-              <Stat label="Salary" value={`$${salary}/mo`} />
+      <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 sm:py-10">
+        {/* HUD — game dashboard */}
+        <div className="card-brut bg-foreground p-5 text-background">
+          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
+            <div className="min-w-0">
+              <div className="font-mono text-[10px] font-bold uppercase tracking-widest text-background/60">
+                Career · Day 1
+              </div>
+              <div className="mt-1 truncate font-display text-2xl font-extrabold sm:text-3xl">
+                Software Engineer
+              </div>
+              <div className="mt-1 flex items-center gap-2 text-sm">
+                <span
+                  className="rounded-md border-2 border-background px-2 py-0.5 font-mono text-[11px] font-bold uppercase tracking-widest"
+                  style={{ background: "var(--primary)" }}
+                >
+                  {level.name}
+                </span>
+              </div>
             </div>
           </div>
-          <div className="mt-5">
-            <Progress
-              value={(xp / level.next) * 100}
-              className="h-2 bg-white/20 [&>*]:bg-white"
-            />
-          </div>
-          <div className="mt-3 flex gap-4 text-xs opacity-90">
-            <MeterBar label="Stress" value={stress} color="var(--stress)" />
+
+          <div className="mt-5 grid gap-4 sm:grid-cols-3">
+            <HudMeter label="XP" value={xp} max={level.next} color="var(--xp)" fmt={(v) => `${v}`} />
+            <HudMeter label="Stress" value={stress} max={100} color="var(--stress)" fmt={(v) => `${v}%`} />
+            <HudMeter label="Salary" value={salary} max={20000} color="var(--coin)" fmt={(v) => `$${v}/mo`} />
           </div>
         </div>
 
         {/* Scene */}
         {!done && (
-          <div className="mt-8 rounded-3xl border border-border bg-card p-8">
-            <div className="flex items-center gap-3 text-sm text-muted-foreground">
-              <scene.icon className="h-4 w-4 text-primary" />
-              {scene.time} · Scenario {step + 1} of {scenes.length}
+          <div className="card-brut mt-6 p-6 sm:p-8">
+            <div className="flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-widest">
+              <scene.icon className="h-4 w-4 text-primary" strokeWidth={2.5} />
+              {scene.time} · Scene {step + 1} / {scenes.length}
             </div>
-            <h2 className="mt-3 text-2xl font-bold tracking-tight">{scene.title}</h2>
-            <p className="mt-2 text-muted-foreground">{scene.body}</p>
+            <h2 className="mt-3 font-display text-2xl font-extrabold sm:text-3xl">
+              {scene.title}
+            </h2>
+            <p className="mt-3 text-foreground/70">{scene.body}</p>
 
             <div className="mt-6 grid gap-3">
               {scene.choices.map((c) => (
                 <button
                   key={c.label}
                   onClick={() => apply(c)}
-                  className="group flex items-center justify-between rounded-2xl border-2 border-border bg-background p-4 text-left transition hover:border-primary hover:shadow-md"
+                  className="card-brut card-brut-hover group grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 p-4 text-left"
                 >
-                  <div>
-                    <div className="font-medium">{c.label}</div>
-                    <div className="mt-1 text-xs text-muted-foreground">
-                      <Badge>{c.xp >= 0 ? `+${c.xp}` : c.xp} XP</Badge>{" "}
+                  <div className="min-w-0">
+                    <div className="font-display text-base font-semibold sm:text-lg">
+                      {c.label}
+                    </div>
+                    <div className="mt-2 flex flex-wrap gap-1.5">
+                      <Badge>{c.xp >= 0 ? `+${c.xp}` : c.xp} XP</Badge>
                       <Badge tone={c.stress > 0 ? "stress" : "calm"}>
                         {c.stress >= 0 ? `+${c.stress}` : c.stress} stress
-                      </Badge>{" "}
+                      </Badge>
                       {c.salary > 0 && <Badge tone="coin">+${c.salary}</Badge>}
                     </div>
                   </div>
-                  <ArrowRight className="h-4 w-4 text-muted-foreground transition group-hover:translate-x-1 group-hover:text-primary" />
+                  <ArrowRight className="h-5 w-5 shrink-0 text-foreground/40 transition group-hover:translate-x-1 group-hover:text-primary" />
                 </button>
               ))}
             </div>
 
             {log.length > 0 && (
-              <div className="mt-6 rounded-xl bg-secondary/50 p-4 text-sm text-muted-foreground">
-                <div className="mb-1 font-medium text-foreground">Last feedback:</div>
+              <div
+                className="mt-6 border-l-4 border-primary bg-secondary p-4 text-sm text-foreground/80"
+              >
+                <div className="mb-1 font-mono text-[10px] font-bold uppercase tracking-widest text-primary">
+                  Feedback
+                </div>
                 {log[log.length - 1].feedback}
               </div>
             )}
@@ -257,40 +263,42 @@ function SimPage() {
 
         {/* End of day */}
         {done && (
-          <div className="mt-8 rounded-3xl border border-border bg-card p-8">
+          <div className="card-brut mt-6 p-6 sm:p-8">
             <div className="flex items-center gap-2">
-              <Trophy className="h-6 w-6 text-primary" />
-              <h2 className="text-2xl font-bold tracking-tight">End of your workday</h2>
+              <Trophy className="h-6 w-6 text-primary" strokeWidth={2.5} />
+              <h2 className="font-display text-2xl font-extrabold sm:text-3xl">
+                End of your workday
+              </h2>
             </div>
-            <p className="mt-2 text-muted-foreground">
+            <p className="mt-2 text-foreground/70">
               You finished at level <b>{level.name}</b> with <b>{xp} XP</b>,{" "}
               <b>{stress}/100</b> stress, and a salary of <b>${salary}/mo</b>.
             </p>
 
             <div className="mt-6 space-y-2">
               {log.map((l, i) => (
-                <div
-                  key={i}
-                  className="rounded-xl border border-border bg-background p-3 text-sm"
-                >
-                  <div className="font-medium">{l.scene}</div>
-                  <div className="text-muted-foreground">→ {l.choice}</div>
+                <div key={i} className="card-brut p-3 text-sm">
+                  <div className="font-display font-bold">{l.scene}</div>
+                  <div className="text-foreground/60">→ {l.choice}</div>
                   <div className="mt-1 text-xs text-primary">{l.feedback}</div>
                 </div>
               ))}
             </div>
 
-            <div className="mt-6 rounded-2xl border-2 border-primary/30 bg-primary/5 p-5">
-              <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-primary">
+            <div className="card-brut mt-6 p-5" style={{ background: "var(--accent)" }}>
+              <div className="mb-2 flex items-center gap-2 font-mono text-[11px] font-bold uppercase tracking-widest">
                 <Zap className="h-4 w-4" /> AI Mentor's take
               </div>
               {!summary && !loading && (
-                <Button onClick={generateSummary} size="sm">
+                <button
+                  onClick={generateSummary}
+                  className="btn-brut bg-foreground px-4 py-2 text-sm font-semibold text-background"
+                >
                   Get AI reflection
-                </Button>
+                </button>
               )}
               {loading && (
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <div className="flex items-center gap-2 text-sm">
                   <Loader2 className="h-4 w-4 animate-spin" /> Reflecting…
                 </div>
               )}
@@ -298,14 +306,15 @@ function SimPage() {
             </div>
 
             <div className="mt-6 flex flex-wrap gap-3">
-              <Button onClick={reset} variant="outline">
+              <button onClick={reset} className="btn-brut bg-card px-4 py-2 font-semibold text-foreground">
                 Replay the day
-              </Button>
-              <Button asChild>
-                <Link to="/mentor">
-                  <MessageSquare className="mr-1 h-4 w-4" /> Chat with AI Mentor
-                </Link>
-              </Button>
+              </button>
+              <Link
+                to="/mentor"
+                className="btn-brut inline-flex items-center gap-2 bg-primary px-4 py-2 font-semibold text-primary-foreground"
+              >
+                <MessageSquare className="h-4 w-4" /> Chat with AI Mentor
+              </Link>
             </div>
           </div>
         )}
@@ -314,11 +323,31 @@ function SimPage() {
   );
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
+function HudMeter({
+  label,
+  value,
+  max,
+  color,
+  fmt,
+}: {
+  label: string;
+  value: number;
+  max: number;
+  color: string;
+  fmt: (v: number) => string;
+}) {
+  const pct = Math.min(100, Math.max(0, (value / max) * 100));
   return (
-    <div className="text-right">
-      <div className="text-[10px] uppercase tracking-widest opacity-70">{label}</div>
-      <div className="font-semibold">{value}</div>
+    <div>
+      <div className="flex items-baseline justify-between">
+        <span className="font-mono text-[10px] font-bold uppercase tracking-widest text-background/60">
+          {label}
+        </span>
+        <span className="font-display text-sm font-bold">{fmt(value)}</span>
+      </div>
+      <div className="mt-1 h-2 w-full border-2 border-background bg-background/10">
+        <div className="h-full transition-all" style={{ width: `${pct}%`, background: color }} />
+      </div>
     </div>
   );
 }
@@ -332,29 +361,18 @@ function Badge({
 }) {
   const bg =
     tone === "stress"
-      ? "oklch(0.95 0.08 25)"
+      ? "oklch(0.85 0.15 25)"
       : tone === "calm"
-        ? "oklch(0.94 0.08 145)"
+        ? "oklch(0.85 0.15 145)"
         : tone === "coin"
-          ? "oklch(0.94 0.09 85)"
-          : "oklch(0.94 0.07 275)";
+          ? "oklch(0.85 0.15 85)"
+          : "oklch(0.85 0.13 55)";
   return (
     <span
-      className="mr-1 inline-block rounded-full px-2 py-0.5 text-[10px] font-medium text-foreground"
+      className="inline-block rounded-full border-[1.5px] border-foreground px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider text-foreground"
       style={{ background: bg }}
     >
       {children}
     </span>
-  );
-}
-
-function MeterBar({ label, value, color }: { label: string; value: number; color: string }) {
-  return (
-    <div className="flex items-center gap-2">
-      <span className="opacity-80">{label}</span>
-      <div className="h-1.5 w-24 overflow-hidden rounded-full bg-white/20">
-        <div className="h-full" style={{ width: `${value}%`, background: color }} />
-      </div>
-    </div>
   );
 }
