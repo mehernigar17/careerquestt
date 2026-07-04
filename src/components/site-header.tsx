@@ -9,8 +9,8 @@ export function SiteHeader() {
           <span className="grid h-9 w-9 shrink-0 place-items-center rounded-md border-2 border-foreground bg-primary text-primary-foreground shadow-[3px_3px_0_0_var(--ink)]">
             <Compass className="h-4 w-4" strokeWidth={2.5} />
           </span>
-          <span className="truncate font-display text-lg font-extrabold tracking-tight">
-            CareerQuest
+          <span className="font-display text-base font-extrabold tracking-tight sm:text-lg">
+            Career<span className="text-primary">Quest</span>
           </span>
         </Link>
         <nav className="flex items-center gap-1 text-sm">
