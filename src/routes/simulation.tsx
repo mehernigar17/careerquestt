@@ -577,7 +577,7 @@ function Simulation({ career }: { career: string }) {
                     </div>
                     <div
                       className="rounded-2xl border px-5 py-3 text-center"
-                      style={{ borderColor: rankColor, color: rankColor, background: `${rankColor} / 0.12` as unknown as string }}
+                      style={{ borderColor: rankColor, color: rankColor, background: `color-mix(in oklch, ${rankColor} 15%, transparent)` }}
                     >
                       <div className="font-mono text-[10px] uppercase tracking-[0.2em]">Rank</div>
                       <div className="font-display text-3xl leading-none">{rank}</div>
