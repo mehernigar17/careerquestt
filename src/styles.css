@@ -65,36 +65,43 @@
   --color-xp: var(--xp);
   --color-stress: var(--stress);
   --color-coin: var(--coin);
+  --font-display: "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
 }
 
 :root {
-  --radius: 0.625rem;
-  --background: oklch(0.985 0.008 95);
-  --foreground: oklch(0.19 0.03 265);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.19 0.03 265);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.19 0.03 265);
-  --primary: oklch(0.55 0.22 275);
-  --primary-foreground: oklch(0.99 0 0);
-  --secondary: oklch(0.95 0.03 275);
-  --secondary-foreground: oklch(0.28 0.12 275);
-  --muted: oklch(0.96 0.01 275);
-  --muted-foreground: oklch(0.5 0.03 265);
-  --accent: oklch(0.78 0.17 55);
-  --accent-foreground: oklch(0.2 0.05 60);
-  --destructive: oklch(0.62 0.22 25);
-  --destructive-foreground: oklch(0.984 0.003 247.858);
-  --border: oklch(0.9 0.02 275);
-  --input: oklch(0.92 0.02 275);
-  --ring: oklch(0.55 0.22 275);
-  --xp: oklch(0.72 0.19 145);
+  /* Cream + ink + electric coral + mint. Neo-editorial with brutalist edges. */
+  --radius: 0.75rem;
+  --background: oklch(0.965 0.02 85);            /* warm cream */
+  --foreground: oklch(0.16 0.02 60);             /* deep ink */
+  --card: oklch(0.995 0.008 85);                 /* off-white */
+  --card-foreground: oklch(0.16 0.02 60);
+  --popover: oklch(0.995 0.008 85);
+  --popover-foreground: oklch(0.16 0.02 60);
+  --primary: oklch(0.65 0.22 25);                /* electric coral */
+  --primary-foreground: oklch(0.99 0.005 85);
+  --secondary: oklch(0.92 0.03 85);              /* sandy */
+  --secondary-foreground: oklch(0.16 0.02 60);
+  --muted: oklch(0.93 0.02 85);
+  --muted-foreground: oklch(0.42 0.02 60);
+  --accent: oklch(0.82 0.16 155);                /* mint */
+  --accent-foreground: oklch(0.18 0.05 155);
+  --destructive: oklch(0.55 0.24 28);
+  --destructive-foreground: oklch(0.99 0 0);
+  --border: oklch(0.16 0.02 60);                 /* ink border for brutalist edges */
+  --input: oklch(0.16 0.02 60);
+  --ring: oklch(0.65 0.22 25);
+  --xp: oklch(0.75 0.18 145);                    /* game-green */
   --stress: oklch(0.65 0.22 25);
-  --coin: oklch(0.78 0.17 85);
-  --gradient-hero: linear-gradient(135deg, oklch(0.55 0.22 275), oklch(0.65 0.2 320) 55%, oklch(0.78 0.17 55));
-  --gradient-card: linear-gradient(160deg, oklch(1 0 0), oklch(0.97 0.02 275));
-  --shadow-glow: 0 20px 60px -20px oklch(0.55 0.22 275 / 0.45);
-  --shadow-soft: 0 8px 24px -12px oklch(0.19 0.03 265 / 0.15);
+  --coin: oklch(0.82 0.17 85);                   /* sun-yellow */
+  --ink: oklch(0.16 0.02 60);
+  --paper: oklch(0.965 0.02 85);
+  /* Signature offset shadow (neo-brutalist stamp) */
+  --shadow-hard: 6px 6px 0 0 var(--ink);
+  --shadow-hard-sm: 3px 3px 0 0 var(--ink);
+  --shadow-hard-lg: 10px 10px 0 0 var(--ink);
+  --shadow-soft: 0 12px 32px -18px oklch(0.16 0.02 60 / 0.4);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
