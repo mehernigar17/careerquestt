@@ -9,11 +9,17 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SimulationRouteImport } from './routes/simulation'
 import { Route as QuizRouteImport } from './routes/quiz'
 import { Route as MentorRouteImport } from './routes/mentor'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiAiRouteImport } from './routes/api/ai'
 
+const SimulationRoute = SimulationRouteImport.update({
+  id: '/simulation',
+  path: '/simulation',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const QuizRoute = QuizRouteImport.update({
   id: '/quiz',
   path: '/quiz',
@@ -39,12 +45,14 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/mentor': typeof MentorRoute
   '/quiz': typeof QuizRoute
+  '/simulation': typeof SimulationRoute
   '/api/ai': typeof ApiAiRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/mentor': typeof MentorRoute
   '/quiz': typeof QuizRoute
+  '/simulation': typeof SimulationRoute
   '/api/ai': typeof ApiAiRoute
 }
 export interface FileRoutesById {
@@ -52,25 +60,34 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/mentor': typeof MentorRoute
   '/quiz': typeof QuizRoute
+  '/simulation': typeof SimulationRoute
   '/api/ai': typeof ApiAiRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/mentor' | '/quiz' | '/api/ai'
+  fullPaths: '/' | '/mentor' | '/quiz' | '/simulation' | '/api/ai'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/mentor' | '/quiz' | '/api/ai'
-  id: '__root__' | '/' | '/mentor' | '/quiz' | '/api/ai'
+  to: '/' | '/mentor' | '/quiz' | '/simulation' | '/api/ai'
+  id: '__root__' | '/' | '/mentor' | '/quiz' | '/simulation' | '/api/ai'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   MentorRoute: typeof MentorRoute
   QuizRoute: typeof QuizRoute
+  SimulationRoute: typeof SimulationRoute
   ApiAiRoute: typeof ApiAiRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/simulation': {
+      id: '/simulation'
+      path: '/simulation'
+      fullPath: '/simulation'
+      preLoaderRoute: typeof SimulationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/quiz': {
       id: '/quiz'
       path: '/quiz'
@@ -106,6 +123,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   MentorRoute: MentorRoute,
   QuizRoute: QuizRoute,
+  SimulationRoute: SimulationRoute,
   ApiAiRoute: ApiAiRoute,
 }
 export const routeTree = rootRouteImport
