@@ -40,6 +40,7 @@ export const Route = createFileRoute("/simulation")({
 });
 
 type TaskType = "code" | "written" | "diagnosis" | "argument" | "plan";
+type Difficulty = "easy" | "medium" | "hard" | "expert";
 type Scene = {
   time: string;
   title: string;
@@ -49,6 +50,7 @@ type Scene = {
   prompt: string;   // the actual challenge
   starter?: string; // starter template
   rubric: string;   // what a good answer looks like (for AI grading)
+  difficulty: Difficulty;
 };
 type Grade = {
   score: number;      // 0-100 quality
@@ -59,7 +61,7 @@ type Grade = {
   feedback: string;   // 2-4 sentences, mentor-style, specific
   punishment?: string; // optional consequence line (e.g. "PR rejected", "malpractice review")
 };
-type Attempt = { scene: string; answer: string; grade: Grade };
+type Attempt = { scene: string; answer: string; grade: Grade; difficulty: Difficulty };
 
 const POPULAR_CAREERS = [
   "Software Engineer",
@@ -129,6 +131,7 @@ function buildFastScenes(career: string): Scene[] {
         title: "Fix the failing production path",
         body: `A dashboard used by customers is showing stale results. As the ${career}, you need to find the bad logic quickly without breaking the happy path.`,
         taskType: "code",
+        difficulty: "easy",
         language: career.toLowerCase().includes("data") ? "sql" : "typescript",
         prompt: career.toLowerCase().includes("data")
           ? "Write a SQL query that returns each active user's latest completed order, including users with no completed orders. Explain any edge case you handle."
@@ -143,6 +146,7 @@ function buildFastScenes(career: string): Scene[] {
         title: "Review a risky change",
         body: "A teammate wants to ship a shortcut before lunch. The change looks small, but it touches authentication, cache behavior, and user-visible state.",
         taskType: "code",
+        difficulty: "medium",
         language: "typescript",
         prompt: "List the risks you would check before approving this change, then write one guard or test that would catch the most dangerous failure.",
         starter: "// Write your review notes and a small test/guard here",
@@ -153,6 +157,7 @@ function buildFastScenes(career: string): Scene[] {
         title: "Design the next API endpoint",
         body: `Product needs a new endpoint today. The ${career} team cares about latency, validation, permissions, and future maintenance.`,
         taskType: "plan",
+        difficulty: "hard",
         prompt: "Design the endpoint contract, validation rules, error states, and rollout plan. Be specific about request/response shape and failure handling.",
         rubric: "Covers contract, validation, authorization, observability, failure cases, and safe rollout trade-offs.",
       },
@@ -161,6 +166,7 @@ function buildFastScenes(career: string): Scene[] {
         title: "Explain the incident clearly",
         body: "A non-technical stakeholder asks what happened and what will prevent it next time. They need a clear answer without blame or jargon overload.",
         taskType: "written",
+        difficulty: "expert",
         prompt: "Write a short incident update with cause, user impact, fix, prevention, and next check-in. Keep it professional and concrete.",
         rubric: "Clear communication, accountability, accurate impact, realistic prevention, and calm professional tone.",
       },
@@ -177,6 +183,7 @@ function buildFastScenes(career: string): Scene[] {
           ? "A client brings an urgent dispute with messy facts, missing documents, and a deadline today. Your first advice will shape the whole matter."
           : `Your inbox is full and two people need opposite things from you. As the ${career}, you have to decide what matters first and why.`,
       taskType,
+      difficulty: "easy",
       prompt: diagnostic
         ? "Write your differential diagnosis, the first three questions/tests you would prioritize, and the immediate management plan."
         : legal
@@ -189,6 +196,7 @@ function buildFastScenes(career: string): Scene[] {
       title: "Handle a difficult stakeholder",
       body: `Someone senior challenges your recommendation in front of the room. You need to defend the work without becoming defensive.`,
       taskType: legal ? "argument" : "written",
+      difficulty: "medium",
       prompt: "Write your response. Include the evidence you rely on, the trade-off you accept, and the next step you recommend.",
       rubric: "Professional tone, evidence-based reasoning, acknowledgement of uncertainty, and a concrete next step.",
     },
@@ -197,6 +205,7 @@ function buildFastScenes(career: string): Scene[] {
       title: planning ? "Build the execution plan" : "Make the judgment call",
       body: `The easy answer is not the responsible answer. Your choice affects quality, trust, timeline, and someone else's workload.`,
       taskType: planning ? "plan" : taskType,
+      difficulty: "hard",
       prompt: "Create the plan or decision memo. State your goal, constraints, options considered, recommendation, and success metric.",
       rubric: "Specific goal, realistic constraints, thoughtful options, clear recommendation, and measurable success criteria.",
     },
@@ -205,6 +214,7 @@ function buildFastScenes(career: string): Scene[] {
       title: "Close the day with accountability",
       body: `The work is not perfect, but the day is ending. A strong ${career} leaves a clean handoff and shows what changed.`,
       taskType: "written",
+      difficulty: "expert",
       prompt: "Write the end-of-day update to your team or client. Include progress, unresolved risks, decisions made, and tomorrow's first action.",
       rubric: "Concise status, honest risk framing, useful handoff detail, and clear ownership of the next step.",
     },
@@ -250,10 +260,16 @@ function evaluateLocally(career: string, scene: Scene, answer: string): Grade {
   const structureScore = clamp(structureHits * 4, 0, 14);
   const detailScore = clamp((specificHits * 4) + (taskHits * 3), 0, 22);
   const score = clamp(lengthScore + vocabularyScore + relevanceScore + structureScore + detailScore, 0, 100);
-  const verdict: Grade["verdict"] = score >= 86 ? "excellent" : score >= 70 ? "good" : score >= 50 ? "okay" : score >= 30 ? "poor" : "failed";
-  const xp = verdict === "excellent" ? 110 : verdict === "good" ? 75 : verdict === "okay" ? 35 : verdict === "poor" ? -5 : -30;
-  const stress = verdict === "excellent" ? -12 : verdict === "good" ? -4 : verdict === "okay" ? 8 : verdict === "poor" ? 22 : 35;
-  const salary = verdict === "excellent" ? 150 : verdict === "failed" ? -80 : 0;
+  // Harder scenes: stricter thresholds, bigger XP + salary swings, more stress.
+  const diffMult = scene.difficulty === "easy" ? 0.85 : scene.difficulty === "medium" ? 1 : scene.difficulty === "hard" ? 1.25 : 1.55;
+  const bump = scene.difficulty === "easy" ? -6 : scene.difficulty === "medium" ? 0 : scene.difficulty === "hard" ? 4 : 8;
+  const verdict: Grade["verdict"] = score >= 86 - bump ? "excellent" : score >= 70 - bump ? "good" : score >= 50 - bump ? "okay" : score >= 30 - bump ? "poor" : "failed";
+  const baseXp = verdict === "excellent" ? 110 : verdict === "good" ? 75 : verdict === "okay" ? 35 : verdict === "poor" ? -5 : -30;
+  const xp = Math.round(baseXp * diffMult);
+  const baseStress = verdict === "excellent" ? -12 : verdict === "good" ? -4 : verdict === "okay" ? 8 : verdict === "poor" ? 22 : 35;
+  const stress = Math.round(baseStress * (0.6 + diffMult * 0.5));
+  const baseSal = verdict === "excellent" ? 150 : verdict === "failed" ? -80 : 0;
+  const salary = Math.round(baseSal * diffMult);
   const feedback = verdict === "excellent" || verdict === "good"
     ? "Strong professional attempt: it is specific, structured, and tied to the task. To make it even sharper, name the biggest risk and how you would verify the outcome."
     : verdict === "okay"
@@ -270,6 +286,13 @@ function evaluateLocally(career: string, scene: Scene, answer: string): Grade {
     ...(verdict === "poor" || verdict === "failed" ? { punishment: scene.taskType === "code" ? "The change would be sent back in review." : "The recommendation would be escalated for correction." } : {}),
   };
 }
+
+const difficultyMeta: Record<Difficulty, { label: string; color: string; weight: number }> = {
+  easy:   { label: "Easy",   color: "oklch(0.78 0.17 175)", weight: 1 },
+  medium: { label: "Medium", color: "oklch(0.85 0.15 90)",  weight: 1.5 },
+  hard:   { label: "Hard",   color: "oklch(0.78 0.19 40)",  weight: 2 },
+  expert: { label: "Expert", color: "oklch(0.72 0.18 340)", weight: 2.5 },
+};
 
 function SimPage() {
   const { career } = Route.useSearch();
@@ -368,7 +391,7 @@ function Simulation({ career }: { career: string }) {
       setXp((v) => clamp(v + (g.xp ?? 0), 0, 9999));
       setStress((v) => clamp(v + (g.stress ?? 0), 0, 100));
       setSalary((v) => Math.max(0, v + (g.salary ?? 0)));
-      setLog((L) => [...L, { scene: currentScene.title, answer, grade: g }]);
+      setLog((L) => [...L, { scene: currentScene.title, answer, grade: g, difficulty: currentScene.difficulty }]);
     } catch (e) {
       setGradeError(e instanceof Error ? e.message : "Grading failed");
     } finally {
@@ -450,7 +473,16 @@ function Simulation({ career }: { career: string }) {
                 return <Icon className="h-4 w-4 text-accent" />;
               })()}
               {currentScene.time} · Scene {step + 1} / {scenes.length}
-              <span className="ml-auto rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-[10px] tracking-[0.1em] text-foreground/60">
+              <span
+                className="ml-auto rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.15em]"
+                style={{
+                  borderColor: difficultyMeta[currentScene.difficulty].color,
+                  color: difficultyMeta[currentScene.difficulty].color,
+                }}
+              >
+                {difficultyMeta[currentScene.difficulty].label}
+              </span>
+              <span className="rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-[10px] tracking-[0.1em] text-foreground/60">
                 {currentScene.taskType}{currentScene.language ? ` · ${currentScene.language}` : ""}
               </span>
             </div>
@@ -529,12 +561,64 @@ function Simulation({ career }: { career: string }) {
               <b>{xp} XP</b>, <b>{stress}/100</b> stress, and <b>${salary.toLocaleString()}/mo</b>.
             </p>
 
+            {log.length > 0 && (() => {
+              const totalWeight = log.reduce((s, l) => s + difficultyMeta[l.difficulty].weight, 0);
+              const weighted = log.reduce((s, l) => s + l.grade.score * difficultyMeta[l.difficulty].weight, 0);
+              const skill = Math.round(weighted / totalWeight);
+              const rank = skill >= 90 ? "S" : skill >= 78 ? "A" : skill >= 65 ? "B" : skill >= 50 ? "C" : skill >= 35 ? "D" : "F";
+              const rankColor = rank === "S" ? "oklch(0.85 0.15 145)" : rank === "A" ? "oklch(0.78 0.17 175)" : rank === "B" ? "oklch(0.85 0.15 90)" : rank === "C" ? "oklch(0.78 0.19 40)" : "oklch(0.7 0.22 20)";
+              const sorted = [...log].sort((a, b) => (b.grade.score * difficultyMeta[b.difficulty].weight) - (a.grade.score * difficultyMeta[a.difficulty].weight));
+              return (
+                <div className="mt-6 rounded-xl border border-white/10 bg-white/[0.03] p-5">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/50">Solving skill</div>
+                      <div className="font-display text-2xl">{skill}<span className="text-foreground/40 text-base"> / 100</span></div>
+                    </div>
+                    <div
+                      className="rounded-2xl border px-5 py-3 text-center"
+                      style={{ borderColor: rankColor, color: rankColor, background: `color-mix(in oklch, ${rankColor} 15%, transparent)` }}
+                    >
+                      <div className="font-mono text-[10px] uppercase tracking-[0.2em]">Rank</div>
+                      <div className="font-display text-3xl leading-none">{rank}</div>
+                    </div>
+                  </div>
+                  <div className="mt-4">
+                    <div className="mb-2 font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/50">Ranked by solving skill</div>
+                    <ol className="space-y-1.5 text-sm">
+                      {sorted.map((l, i) => (
+                        <li key={i} className="flex items-center gap-3">
+                          <span className="font-mono text-foreground/40 w-5">#{i + 1}</span>
+                          <span className="flex-1 truncate">{l.scene}</span>
+                          <span
+                            className="rounded-full border px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.15em]"
+                            style={{ borderColor: difficultyMeta[l.difficulty].color, color: difficultyMeta[l.difficulty].color }}
+                          >
+                            {difficultyMeta[l.difficulty].label}
+                          </span>
+                          <span className="font-mono text-foreground/70 w-10 text-right">{l.grade.score}</span>
+                        </li>
+                      ))}
+                    </ol>
+                  </div>
+                </div>
+              );
+            })()}
+
             <div className="mt-6 space-y-3">
               {log.map((l, i) => (
                 <div key={i} className="rounded-xl border border-white/5 bg-white/[0.03] p-4">
                   <div className="flex items-center justify-between gap-3">
                     <div className="font-display text-lg">{l.scene}</div>
-                    <VerdictPill verdict={l.grade.verdict} score={l.grade.score} />
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="rounded-full border px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.15em]"
+                        style={{ borderColor: difficultyMeta[l.difficulty].color, color: difficultyMeta[l.difficulty].color }}
+                      >
+                        {difficultyMeta[l.difficulty].label}
+                      </span>
+                      <VerdictPill verdict={l.grade.verdict} score={l.grade.score} />
+                    </div>
                   </div>
                   <div className="mt-2 text-xs text-foreground/85">{l.grade.feedback}</div>
                   {l.grade.punishment && (
