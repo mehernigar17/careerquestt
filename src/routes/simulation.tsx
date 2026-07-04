@@ -561,12 +561,64 @@ function Simulation({ career }: { career: string }) {
               <b>{xp} XP</b>, <b>{stress}/100</b> stress, and <b>${salary.toLocaleString()}/mo</b>.
             </p>
 
+            {log.length > 0 && (() => {
+              const totalWeight = log.reduce((s, l) => s + difficultyMeta[l.difficulty].weight, 0);
+              const weighted = log.reduce((s, l) => s + l.grade.score * difficultyMeta[l.difficulty].weight, 0);
+              const skill = Math.round(weighted / totalWeight);
+              const rank = skill >= 90 ? "S" : skill >= 78 ? "A" : skill >= 65 ? "B" : skill >= 50 ? "C" : skill >= 35 ? "D" : "F";
+              const rankColor = rank === "S" ? "oklch(0.85 0.15 145)" : rank === "A" ? "oklch(0.78 0.17 175)" : rank === "B" ? "oklch(0.85 0.15 90)" : rank === "C" ? "oklch(0.78 0.19 40)" : "oklch(0.7 0.22 20)";
+              const sorted = [...log].sort((a, b) => (b.grade.score * difficultyMeta[b.difficulty].weight) - (a.grade.score * difficultyMeta[a.difficulty].weight));
+              return (
+                <div className="mt-6 rounded-xl border border-white/10 bg-white/[0.03] p-5">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/50">Solving skill</div>
+                      <div className="font-display text-2xl">{skill}<span className="text-foreground/40 text-base"> / 100</span></div>
+                    </div>
+                    <div
+                      className="rounded-2xl border px-5 py-3 text-center"
+                      style={{ borderColor: rankColor, color: rankColor, background: `${rankColor} / 0.12` as unknown as string }}
+                    >
+                      <div className="font-mono text-[10px] uppercase tracking-[0.2em]">Rank</div>
+                      <div className="font-display text-3xl leading-none">{rank}</div>
+                    </div>
+                  </div>
+                  <div className="mt-4">
+                    <div className="mb-2 font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/50">Ranked by solving skill</div>
+                    <ol className="space-y-1.5 text-sm">
+                      {sorted.map((l, i) => (
+                        <li key={i} className="flex items-center gap-3">
+                          <span className="font-mono text-foreground/40 w-5">#{i + 1}</span>
+                          <span className="flex-1 truncate">{l.scene}</span>
+                          <span
+                            className="rounded-full border px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.15em]"
+                            style={{ borderColor: difficultyMeta[l.difficulty].color, color: difficultyMeta[l.difficulty].color }}
+                          >
+                            {difficultyMeta[l.difficulty].label}
+                          </span>
+                          <span className="font-mono text-foreground/70 w-10 text-right">{l.grade.score}</span>
+                        </li>
+                      ))}
+                    </ol>
+                  </div>
+                </div>
+              );
+            })()}
+
             <div className="mt-6 space-y-3">
               {log.map((l, i) => (
                 <div key={i} className="rounded-xl border border-white/5 bg-white/[0.03] p-4">
                   <div className="flex items-center justify-between gap-3">
                     <div className="font-display text-lg">{l.scene}</div>
-                    <VerdictPill verdict={l.grade.verdict} score={l.grade.score} />
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="rounded-full border px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.15em]"
+                        style={{ borderColor: difficultyMeta[l.difficulty].color, color: difficultyMeta[l.difficulty].color }}
+                      >
+                        {difficultyMeta[l.difficulty].label}
+                      </span>
+                      <VerdictPill verdict={l.grade.verdict} score={l.grade.score} />
+                    </div>
                   </div>
                   <div className="mt-2 text-xs text-foreground/85">{l.grade.feedback}</div>
                   {l.grade.punishment && (
