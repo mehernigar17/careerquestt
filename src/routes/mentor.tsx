@@ -23,11 +23,11 @@ export const Route = createFileRoute("/mentor")({
 });
 
 const mentors = [
-  { id: "engineer", label: "Senior Software Engineer", tag: "SWE", color: "oklch(0.85 0.13 55)" },
-  { id: "doctor", label: "Attending Physician", tag: "MD", color: "oklch(0.85 0.13 145)" },
-  { id: "designer", label: "Lead UX Designer", tag: "UX", color: "oklch(0.85 0.13 320)" },
-  { id: "lawyer", label: "Corporate Lawyer", tag: "LAW", color: "oklch(0.85 0.13 240)" },
-  { id: "pm", label: "Product Manager", tag: "PM", color: "oklch(0.85 0.13 85)" },
+  { id: "engineer", label: "Senior Software Engineer", tag: "SWE", grad: "linear-gradient(135deg, oklch(0.65 0.2 265), oklch(0.72 0.18 200))" },
+  { id: "doctor", label: "Attending Physician", tag: "MD", grad: "linear-gradient(135deg, oklch(0.72 0.2 340), oklch(0.68 0.22 20))" },
+  { id: "designer", label: "Lead UX Designer", tag: "UX", grad: "linear-gradient(135deg, oklch(0.72 0.19 295), oklch(0.78 0.15 200))" },
+  { id: "lawyer", label: "Corporate Lawyer", tag: "LAW", grad: "linear-gradient(135deg, oklch(0.6 0.15 250), oklch(0.5 0.1 265))" },
+  { id: "pm", label: "Product Manager", tag: "PM", grad: "linear-gradient(135deg, oklch(0.78 0.19 40), oklch(0.7 0.22 350))" },
 ];
 
 type Msg = { role: "user" | "assistant"; content: string };
@@ -91,30 +91,30 @@ function MentorPage() {
   }
 
   return (
-    <div className="min-h-screen bg-paper-grid">
+    <div className="min-h-screen bg-aurora">
       <SiteHeader />
-      <div className="mx-auto grid max-w-5xl gap-6 px-4 py-8 sm:px-6 sm:py-10 md:grid-cols-[260px_1fr]">
+      <div className="mx-auto grid max-w-5xl gap-6 px-4 py-10 sm:px-6 sm:py-12 md:grid-cols-[280px_1fr]">
         <aside>
-          <span className="chip-ink">Pick a mentor</span>
-          <div className="mt-3 space-y-2">
+          <span className="chip-glass">Pick a mentor</span>
+          <div className="mt-4 space-y-2">
             {mentors.map((m) => {
               const active = mentor.id === m.id;
               return (
                 <button
                   key={m.id}
                   onClick={() => switchMentor(m)}
-                  className={`card-brut flex w-full items-center gap-3 p-3 text-left transition ${
-                    active ? "translate-x-[-2px] translate-y-[-2px]" : ""
+                  className={`glass-card flex w-full items-center gap-3 p-3 text-left transition ${
+                    active ? "border-white/25" : "hover:border-white/15"
                   }`}
-                  style={active ? { background: m.color, boxShadow: "var(--shadow-hard-lg)" } : {}}
+                  style={active ? { boxShadow: "var(--shadow-glow)" } : {}}
                 >
                   <span
-                    className="grid h-9 w-9 shrink-0 place-items-center rounded-md border-2 border-foreground font-mono text-[10px] font-bold"
-                    style={{ background: m.color }}
+                    className="grid h-9 w-9 shrink-0 place-items-center rounded-lg font-mono text-[10px] font-semibold text-background"
+                    style={{ background: m.grad }}
                   >
                     {m.tag}
                   </span>
-                  <span className="min-w-0 truncate font-display text-sm font-semibold">
+                  <span className="min-w-0 truncate text-sm font-medium">
                     {m.label}
                   </span>
                 </button>
@@ -123,17 +123,17 @@ function MentorPage() {
           </div>
         </aside>
 
-        <section className="card-brut flex h-[75vh] min-h-[500px] flex-col overflow-hidden bg-card">
-          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b-2 border-foreground p-4">
+        <section className="glass-card flex h-[75vh] min-h-[500px] flex-col overflow-hidden">
+          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-white/5 p-4">
             <div className="min-w-0">
-              <div className="font-mono text-[10px] font-bold uppercase tracking-widest text-foreground/60">
+              <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/50">
                 Chatting with
               </div>
-              <div className="truncate font-display text-lg font-bold">{mentor.label}</div>
+              <div className="truncate font-display text-xl">{mentor.label}</div>
             </div>
             <span
-              className="grid h-10 w-10 shrink-0 place-items-center rounded-md border-2 border-foreground font-mono text-xs font-bold"
-              style={{ background: mentor.color }}
+              className="grid h-10 w-10 shrink-0 place-items-center rounded-lg font-mono text-xs font-semibold text-background"
+              style={{ background: mentor.grad }}
             >
               {mentor.tag}
             </span>
@@ -145,23 +145,26 @@ function MentorPage() {
                 className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}
               >
                 {m.role === "user" ? (
-                  <div className="max-w-[85%] whitespace-pre-wrap rounded-lg border-2 border-foreground bg-primary px-4 py-2.5 text-sm font-medium leading-relaxed text-primary-foreground shadow-[3px_3px_0_0_var(--ink)]">
+                  <div
+                    className="max-w-[85%] whitespace-pre-wrap rounded-2xl rounded-br-md px-4 py-2.5 text-sm leading-relaxed text-primary-foreground"
+                    style={{ background: "var(--grad-primary)" }}
+                  >
                     {m.content}
                   </div>
                 ) : (
-                  <div className="max-w-[90%] whitespace-pre-wrap text-sm leading-relaxed text-foreground">
+                  <div className="max-w-[90%] whitespace-pre-wrap rounded-2xl rounded-bl-md border border-white/5 bg-white/5 px-4 py-2.5 text-sm leading-relaxed text-foreground/90">
                     {m.content}
                   </div>
                 )}
               </div>
             ))}
             {loading && (
-              <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-foreground/60">
+              <div className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.2em] text-foreground/50">
                 <Loader2 className="h-4 w-4 animate-spin" /> Thinking…
               </div>
             )}
           </div>
-          <div className="border-t-2 border-foreground bg-secondary/40 p-3">
+          <div className="border-t border-white/5 bg-white/[0.02] p-3">
             <div className="flex gap-2">
               <textarea
                 value={input}
@@ -173,13 +176,13 @@ function MentorPage() {
                   }
                 }}
                 placeholder="Ask about a typical day, hard moments, or how to break in…"
-                className="min-h-[48px] flex-1 resize-none rounded-md border-2 border-foreground bg-card px-3 py-2 text-sm outline-none focus:shadow-[3px_3px_0_0_var(--ink)]"
+                className="min-h-[48px] flex-1 resize-none rounded-xl border border-white/10 bg-white/5 px-3.5 py-2.5 text-sm outline-none placeholder:text-foreground/40 focus:border-white/25"
                 rows={2}
               />
               <button
                 onClick={send}
                 disabled={loading || !input.trim()}
-                className="btn-brut grid h-12 w-12 shrink-0 place-items-center self-end bg-primary text-primary-foreground disabled:opacity-40"
+                className="btn-primary-grad grid h-12 w-12 shrink-0 place-items-center self-end disabled:opacity-40"
               >
                 <Send className="h-4 w-4" />
               </button>
