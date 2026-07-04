@@ -7,7 +7,13 @@ type Body = {
   json?: boolean;
   model?: string;
   fast?: boolean;
+  timeoutMs?: number;
 };
+
+function boundedTimeout(ms: unknown) {
+  if (typeof ms !== "number" || !Number.isFinite(ms)) return 20000;
+  return Math.max(1000, Math.min(60000, Math.round(ms)));
+}
 
 export const Route = createFileRoute("/api/ai")({
   server: {
@@ -29,19 +35,34 @@ export const Route = createFileRoute("/api/ai")({
             { role: "user" as const, content: body.prompt ?? "" },
           ];
 
-        const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Lovable-API-Key": key,
-          },
-          body: JSON.stringify({
-            model: body.model ?? "google/gemini-3-flash-preview",
-            messages,
-            ...(body.json ? { response_format: { type: "json_object" } } : {}),
-            ...(body.fast ? { service_tier: "priority" } : {}),
-          }),
-        });
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), boundedTimeout(body.timeoutMs));
+        request.signal.addEventListener("abort", () => controller.abort(), { once: true });
+
+        let res: Response;
+        try {
+          res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Lovable-API-Key": key,
+            },
+            signal: controller.signal,
+            body: JSON.stringify({
+              model: body.model ?? "google/gemini-3-flash-preview",
+              messages,
+              ...(body.json ? { response_format: { type: "json_object" } } : {}),
+              ...(body.fast ? { service_tier: "priority" } : {}),
+            }),
+          });
+        } catch (error) {
+          if (controller.signal.aborted) {
+            return new Response("AI request timed out", { status: 504 });
+          }
+          throw error;
+        } finally {
+          clearTimeout(timeout);
+        }
 
         if (!res.ok) {
           const text = await res.text();

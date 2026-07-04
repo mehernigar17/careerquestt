@@ -106,6 +106,171 @@ function baseSalary(career: string) {
   return 3000;
 }
 
+function taskTypeForCareer(career: string): TaskType {
+  const c = career.toLowerCase();
+  if (c.includes("software") || c.includes("engineer") || c.includes("developer") || c.includes("data")) return "code";
+  if (c.includes("doctor") || c.includes("nurse") || c.includes("medical") || c.includes("therapist")) return "diagnosis";
+  if (c.includes("law") || c.includes("legal") || c.includes("attorney")) return "argument";
+  if (c.includes("teacher") || c.includes("architect") || c.includes("manager") || c.includes("designer")) return "plan";
+  return "written";
+}
+
+function buildFastScenes(career: string): Scene[] {
+  const taskType = taskTypeForCareer(career);
+  const technical = taskType === "code";
+  const diagnostic = taskType === "diagnosis";
+  const legal = taskType === "argument";
+  const planning = taskType === "plan";
+
+  if (technical) {
+    return [
+      {
+        time: "9:00 AM",
+        title: "Fix the failing production path",
+        body: `A dashboard used by customers is showing stale results. As the ${career}, you need to find the bad logic quickly without breaking the happy path.`,
+        taskType: "code",
+        language: career.toLowerCase().includes("data") ? "sql" : "typescript",
+        prompt: career.toLowerCase().includes("data")
+          ? "Write a SQL query that returns each active user's latest completed order, including users with no completed orders. Explain any edge case you handle."
+          : "Write a small function that removes duplicate records by id, keeps the newest updatedAt value, and returns the records sorted newest first.",
+        starter: career.toLowerCase().includes("data")
+          ? "-- tables: users(id, active), orders(id, user_id, status, updated_at)\nSELECT ..."
+          : "type Record = { id: string; updatedAt: string; value: string }\nfunction latestById(records: Record[]) {\n  // your code\n}",
+        rubric: "Correctness, edge-case handling, clear data structure choice, readable implementation, and brief reasoning.",
+      },
+      {
+        time: "11:30 AM",
+        title: "Review a risky change",
+        body: "A teammate wants to ship a shortcut before lunch. The change looks small, but it touches authentication, cache behavior, and user-visible state.",
+        taskType: "code",
+        language: "typescript",
+        prompt: "List the risks you would check before approving this change, then write one guard or test that would catch the most dangerous failure.",
+        starter: "// Write your review notes and a small test/guard here",
+        rubric: "Identifies realistic production risks, prioritizes user impact, includes a concrete test or guard, and avoids vague review comments.",
+      },
+      {
+        time: "2:15 PM",
+        title: "Design the next API endpoint",
+        body: `Product needs a new endpoint today. The ${career} team cares about latency, validation, permissions, and future maintenance.`,
+        taskType: "plan",
+        prompt: "Design the endpoint contract, validation rules, error states, and rollout plan. Be specific about request/response shape and failure handling.",
+        rubric: "Covers contract, validation, authorization, observability, failure cases, and safe rollout trade-offs.",
+      },
+      {
+        time: "5:40 PM",
+        title: "Explain the incident clearly",
+        body: "A non-technical stakeholder asks what happened and what will prevent it next time. They need a clear answer without blame or jargon overload.",
+        taskType: "written",
+        prompt: "Write a short incident update with cause, user impact, fix, prevention, and next check-in. Keep it professional and concrete.",
+        rubric: "Clear communication, accountability, accurate impact, realistic prevention, and calm professional tone.",
+      },
+    ];
+  }
+
+  return [
+    {
+      time: "9:00 AM",
+      title: diagnostic ? "Triage a high-pressure case" : legal ? "Assess the client fact pattern" : `Prioritize the ${career} morning`,
+      body: diagnostic
+        ? "A patient arrives with conflicting symptoms, incomplete history, and anxious family members asking for certainty. You have limited time before escalation."
+        : legal
+          ? "A client brings an urgent dispute with messy facts, missing documents, and a deadline today. Your first advice will shape the whole matter."
+          : `Your inbox is full and two people need opposite things from you. As the ${career}, you have to decide what matters first and why.`,
+      taskType,
+      prompt: diagnostic
+        ? "Write your differential diagnosis, the first three questions/tests you would prioritize, and the immediate management plan."
+        : legal
+          ? "Write your initial legal argument or advice, including the strongest facts, weak points, and what evidence you still need."
+          : "Write your priority plan for the next two hours. Include what you do first, what you defer, and how you communicate it.",
+      rubric: "Uses concrete professional reasoning, names risks, prioritizes well, and explains the decision clearly.",
+    },
+    {
+      time: "11:45 AM",
+      title: "Handle a difficult stakeholder",
+      body: `Someone senior challenges your recommendation in front of the room. You need to defend the work without becoming defensive.`,
+      taskType: legal ? "argument" : "written",
+      prompt: "Write your response. Include the evidence you rely on, the trade-off you accept, and the next step you recommend.",
+      rubric: "Professional tone, evidence-based reasoning, acknowledgement of uncertainty, and a concrete next step.",
+    },
+    {
+      time: "2:30 PM",
+      title: planning ? "Build the execution plan" : "Make the judgment call",
+      body: `The easy answer is not the responsible answer. Your choice affects quality, trust, timeline, and someone else's workload.`,
+      taskType: planning ? "plan" : taskType,
+      prompt: "Create the plan or decision memo. State your goal, constraints, options considered, recommendation, and success metric.",
+      rubric: "Specific goal, realistic constraints, thoughtful options, clear recommendation, and measurable success criteria.",
+    },
+    {
+      time: "5:20 PM",
+      title: "Close the day with accountability",
+      body: `The work is not perfect, but the day is ending. A strong ${career} leaves a clean handoff and shows what changed.`,
+      taskType: "written",
+      prompt: "Write the end-of-day update to your team or client. Include progress, unresolved risks, decisions made, and tomorrow's first action.",
+      rubric: "Concise status, honest risk framing, useful handoff detail, and clear ownership of the next step.",
+    },
+  ];
+}
+
+function evaluateLocally(career: string, scene: Scene, answer: string): Grade {
+  const trimmed = answer.trim();
+  const starter = scene.starter?.trim();
+  if (trimmed.length < 20 || (starter && trimmed === starter)) {
+    return {
+      score: trimmed.length < 20 ? 8 : 18,
+      xp: -25,
+      stress: 25,
+      salary: 0,
+      verdict: "failed",
+      feedback: "This does not show enough real work to trust in a professional setting. Add specific reasoning, concrete steps, and the trade-offs behind your decision.",
+      punishment: scene.taskType === "code" ? "Review blocked until the solution is complete." : "Senior review required before this can move forward.",
+    };
+  }
+
+  const text = trimmed.toLowerCase();
+  const words = text.match(/[a-z0-9_]+/g) ?? [];
+  const uniqueWords = new Set(words);
+  const sourceTerms = `${scene.prompt} ${scene.rubric} ${career}`
+    .toLowerCase()
+    .match(/[a-z][a-z0-9_]{4,}/g) ?? [];
+  const meaningfulTerms = Array.from(new Set(sourceTerms)).slice(0, 28);
+  const termHits = meaningfulTerms.filter((term) => text.includes(term)).length;
+  const structureHits = ["\n", "-", "1.", "because", "therefore", "risk", "trade", "metric", "test", "plan"].filter((term) => text.includes(term)).length;
+  const specificHits = [/\d/.test(text), /\b(if|when|then|else|return|select|from|where|join|function|const|let|class)\b/.test(text), /\b(first|next|finally|priority|evidence|impact|edge|validate|measure)\b/.test(text)].filter(Boolean).length;
+  const taskHits = scene.taskType === "code"
+    ? ["function", "return", "if", "test", "select", "where", "join", "edge"].filter((term) => text.includes(term)).length
+    : scene.taskType === "diagnosis"
+      ? ["differential", "history", "test", "vitals", "treatment", "monitor", "rule out"].filter((term) => text.includes(term)).length
+      : scene.taskType === "argument"
+        ? ["because", "evidence", "client", "risk", "fact", "argument", "weak"].filter((term) => text.includes(term)).length
+        : ["goal", "step", "risk", "metric", "timeline", "owner", "priority"].filter((term) => text.includes(term)).length;
+
+  const lengthScore = clamp(Math.round(words.length * 0.45), 0, 28);
+  const vocabularyScore = clamp(uniqueWords.size, 0, 22);
+  const relevanceScore = clamp(termHits * 4, 0, 24);
+  const structureScore = clamp(structureHits * 4, 0, 14);
+  const detailScore = clamp((specificHits * 4) + (taskHits * 3), 0, 22);
+  const score = clamp(lengthScore + vocabularyScore + relevanceScore + structureScore + detailScore, 0, 100);
+  const verdict: Grade["verdict"] = score >= 86 ? "excellent" : score >= 70 ? "good" : score >= 50 ? "okay" : score >= 30 ? "poor" : "failed";
+  const xp = verdict === "excellent" ? 110 : verdict === "good" ? 75 : verdict === "okay" ? 35 : verdict === "poor" ? -5 : -30;
+  const stress = verdict === "excellent" ? -12 : verdict === "good" ? -4 : verdict === "okay" ? 8 : verdict === "poor" ? 22 : 35;
+  const salary = verdict === "excellent" ? 150 : verdict === "failed" ? -80 : 0;
+  const feedback = verdict === "excellent" || verdict === "good"
+    ? "Strong professional attempt: it is specific, structured, and tied to the task. To make it even sharper, name the biggest risk and how you would verify the outcome."
+    : verdict === "okay"
+      ? "This is a real attempt, but it needs sharper prioritization and more concrete evidence. Add exact steps, constraints, and how you would know the work succeeded."
+      : "The answer is too thin or generic for a senior to approve confidently. Use task-specific details, explain your reasoning, and include a concrete next action.";
+
+  return {
+    score,
+    xp,
+    stress,
+    salary,
+    verdict,
+    feedback,
+    ...(verdict === "poor" || verdict === "failed" ? { punishment: scene.taskType === "code" ? "The change would be sent back in review." : "The recommendation would be escalated for correction." } : {}),
+  };
+}
+
 function SimPage() {
   const { career } = Route.useSearch();
   const navigate = useNavigate();
@@ -171,8 +336,7 @@ function PickCareer({ onPick }: { onPick: (c: string) => void }) {
 }
 
 function Simulation({ career }: { career: string }) {
-  const [scenes, setScenes] = useState<Scene[] | null>(null);
-  const [genError, setGenError] = useState<string | null>(null);
+  const [scenes] = useState<Scene[]>(() => buildFastScenes(career));
   const [step, setStep] = useState(0);
   const [xp, setXp] = useState(50);
   const [stress, setStress] = useState(25);
@@ -183,11 +347,10 @@ function Simulation({ career }: { career: string }) {
   const [gradeError, setGradeError] = useState<string | null>(null);
   const [lastGrade, setLastGrade] = useState<Grade | null>(null);
   const [summary, setSummary] = useState<string | null>(null);
-  const [summaryLoading, setSummaryLoading] = useState(false);
 
   const level = useMemo(() => levelFor(xp, career), [xp, career]);
-  const done = scenes !== null && step >= scenes.length;
-  const currentScene = scenes && !done ? scenes[step] : null;
+  const done = step >= scenes.length;
+  const currentScene = !done ? scenes[step] : null;
 
   useEffect(() => {
     if (currentScene) setAnswer(currentScene.starter ?? "");
@@ -195,109 +358,12 @@ function Simulation({ career }: { career: string }) {
     setGradeError(null);
   }, [step, scenes]);
 
-  useEffect(() => {
-    let cancelled = false;
-    async function gen() {
-      setGenError(null);
-      try {
-        const prompt = `Generate a realistic "day in the life" simulation for a ${career} where the user must ACTUALLY SOLVE each problem (not pick from options). Return strict JSON.
-
-Shape:
-{"scenes":[
-  {
-    "time":"9:00 AM",
-    "title":"short specific problem title",
-    "body":"2-4 sentences giving concrete context — real tools, real jargon, real stakes for a ${career}",
-    "taskType":"code" | "written" | "diagnosis" | "argument" | "plan",
-    "language":"javascript" | "python" | "sql" | "typescript",   // required ONLY when taskType is "code"
-    "prompt":"the exact task to complete — a coding problem to solve, a case to diagnose, a legal argument to write, a design plan to describe. Be concrete and self-contained.",
-    "starter":"optional starter code / template / prompt scaffold the user can edit",
-    "rubric":"what a strong answer must demonstrate — used later to grade the user"
-  },
-  ... exactly 4 scenes for morning, midday, afternoon, evening
-]}
-
-Rules by career:
-- Software Engineer / Data Scientist / anything technical: taskType="code" with a real algorithm/bug/query challenge. Include starter code.
-- Doctor: taskType="diagnosis" — a real patient case (symptoms, vitals, history). User writes differential + plan.
-- Lawyer: taskType="argument" — a client fact pattern. User writes their legal argument or advice.
-- UX Designer: taskType="written" or "plan" — a real design brief. User describes their approach and key decisions.
-- Teacher: taskType="plan" — a real classroom situation. User writes their lesson/response plan.
-- Product Manager: taskType="written" — a real trade-off memo the user must write.
-- Other: pick the best taskType.
-
-Every scene must be a REAL problem the user solves by typing, not a multiple choice. Vary difficulty across the day. Use profession-specific detail (frameworks, drugs, statutes, laws, methodologies). No emojis, no markdown.`;
-        const res = await fetch("/api/ai", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            system: `You are a senior ${career} who designs realistic on-the-job challenges. Output only valid JSON.`,
-            prompt,
-            json: true,
-          }),
-        });
-        if (!res.ok) throw new Error(await res.text());
-        const { content } = (await res.json()) as { content: string };
-        const parsed = JSON.parse(content) as { scenes: Scene[] };
-        if (!cancelled && parsed.scenes?.length) setScenes(parsed.scenes);
-      } catch (e) {
-        if (!cancelled) setGenError(e instanceof Error ? e.message : "Failed to generate simulation");
-      }
-    }
-    gen();
-    return () => {
-      cancelled = true;
-    };
-  }, [career]);
-
   async function submitAnswer() {
     if (!currentScene || !answer.trim() || grading) return;
     setGrading(true);
     setGradeError(null);
     try {
-      const gradingPrompt = `You are a strict but fair senior ${career} grading a junior's attempt on this real task.
-
-TASK:
-${currentScene.prompt}
-
-STARTER (if any) — do not count the untouched starter as the user's work:
-${currentScene.starter ?? "(none)"}
-
-WHAT A STRONG ANSWER LOOKS LIKE:
-${currentScene.rubric}
-
-THE USER'S ANSWER:
-"""
-${answer}
-"""
-
-Grade harshly and honestly like a real senior would. If the answer is empty, gibberish, off-topic, or clearly not attempting the task, treat as "failed" with low score, negative xp, high stress, and a real punishment (e.g. "PR rejected by review", "Attending overruled your call", "Client fired the firm").
-If it's a genuine strong attempt, reward with high xp and possibly a small salary bump.
-
-Return strict JSON:
-{
-  "score": 0-100,
-  "xp": integer between -40 and 120,
-  "stress": integer between -25 and 45,
-  "salary": integer usually 0, occasionally between -200 and +600 for standout work or major screw-ups,
-  "verdict": "excellent" | "good" | "okay" | "poor" | "failed",
-  "feedback": "2-4 sentences of specific mentor feedback — call out concrete things in the answer",
-  "punishment": "optional 1-line real-world consequence when verdict is poor or failed, otherwise omit"
-}`;
-      const res = await fetch("/api/ai", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          system: `You are an honest, exacting senior ${career}. You do not hand out participation trophies. Output only valid JSON.`,
-          prompt: gradingPrompt,
-          json: true,
-          model: "openai/gpt-5-mini",
-          fast: true,
-        }),
-      });
-      if (!res.ok) throw new Error(await res.text());
-      const { content } = (await res.json()) as { content: string };
-      const g = JSON.parse(content) as Grade;
+      const g = evaluateLocally(career, currentScene, answer);
       setLastGrade(g);
       setXp((v) => clamp(v + (g.xp ?? 0), 0, 9999));
       setStress((v) => clamp(v + (g.stress ?? 0), 0, 100));
@@ -316,23 +382,13 @@ Return strict JSON:
 
   async function generateSummary() {
     if (!scenes) return;
-    setSummaryLoading(true);
-    try {
-      const res = await fetch("/api/ai", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          system: `You are a warm, experienced senior ${career} mentoring a curious student. In 3-5 short sentences, reflect on their day — reference their actual work quality. Highlight one strength and one honest area to grow. No bullet points, no lists.`,
-          prompt: `Career: ${career}\nFinal XP: ${xp}\nStress: ${stress}/100\nSalary: $${salary}/mo\nLevel: ${level.name}\n\nAttempts:\n${log.map((l) => `- ${l.scene}: verdict=${l.grade.verdict} (score ${l.grade.score}/100)`).join("\n")}`,
-        }),
-      });
-      const { content } = (await res.json()) as { content: string };
-      setSummary(content);
-    } catch {
-      setSummary("Real work today — you made trade-offs like a working professional.");
-    } finally {
-      setSummaryLoading(false);
-    }
+    const averageScore = log.length
+      ? Math.round(log.reduce((total, item) => total + item.grade.score, 0) / log.length)
+      : 0;
+    const best = log.reduce<Attempt | null>((top, item) => (!top || item.grade.score > top.grade.score ? item : top), null);
+    setSummary(
+      `You finished a realistic ${career} day at ${level.name} with an average review score of ${averageScore}. ${best ? `Your strongest moment was “${best.scene},” where your work earned a ${best.grade.verdict} review.` : "You completed the core workflow and saw the trade-offs of the role."} Keep improving by making each answer more specific, more evidence-based, and easier for a senior to trust.`,
+    );
   }
 
   function reset() {
@@ -384,28 +440,6 @@ Return strict JSON:
             </div>
           </div>
         </div>
-
-        {/* Loading / Error */}
-        {!scenes && !genError && (
-          <div className="glass-card mt-6 flex flex-col items-center gap-4 p-16 text-center">
-            <Loader2 className="h-8 w-8 animate-spin text-accent" />
-            <div className="font-display text-2xl">Writing your day as a {career}…</div>
-            <div className="text-sm text-foreground/60">
-              Generating realistic scenarios and trade-offs.
-            </div>
-          </div>
-        )}
-        {genError && (
-          <div className="glass-card mt-6 border-destructive/40 p-6">
-            <div className="text-destructive">{genError}</div>
-            <button
-              onClick={() => window.location.reload()}
-              className="btn-ghost-glass mt-3 px-4 py-2 text-sm font-medium"
-            >
-              Try again
-            </button>
-          </div>
-        )}
 
         {/* Scene — real task */}
         {scenes && !done && currentScene && (
@@ -517,18 +551,13 @@ Return strict JSON:
               <div className="mb-2 flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.2em]">
                 <Zap className="h-4 w-4 text-accent" /> AI Mentor's take
               </div>
-              {!summary && !summaryLoading && (
+              {!summary && (
                 <button
                   onClick={generateSummary}
                   className="btn-primary-grad px-4 py-2 text-sm font-semibold"
                 >
-                  Get AI reflection
+                  Get reflection
                 </button>
-              )}
-              {summaryLoading && (
-                <div className="flex items-center gap-2 text-sm">
-                  <Loader2 className="h-4 w-4 animate-spin" /> Reflecting…
-                </div>
               )}
               {summary && <p className="text-sm leading-relaxed text-foreground/85">{summary}</p>}
             </div>
