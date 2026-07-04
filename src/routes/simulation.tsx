@@ -347,7 +347,6 @@ function Simulation({ career }: { career: string }) {
   const [gradeError, setGradeError] = useState<string | null>(null);
   const [lastGrade, setLastGrade] = useState<Grade | null>(null);
   const [summary, setSummary] = useState<string | null>(null);
-  const [summaryLoading, setSummaryLoading] = useState(false);
 
   const level = useMemo(() => levelFor(xp, career), [xp, career]);
   const done = step >= scenes.length;
@@ -441,28 +440,6 @@ function Simulation({ career }: { career: string }) {
             </div>
           </div>
         </div>
-
-        {/* Loading / Error */}
-        {!scenes && !genError && (
-          <div className="glass-card mt-6 flex flex-col items-center gap-4 p-16 text-center">
-            <Loader2 className="h-8 w-8 animate-spin text-accent" />
-            <div className="font-display text-2xl">Writing your day as a {career}…</div>
-            <div className="text-sm text-foreground/60">
-              Generating realistic scenarios and trade-offs.
-            </div>
-          </div>
-        )}
-        {genError && (
-          <div className="glass-card mt-6 border-destructive/40 p-6">
-            <div className="text-destructive">{genError}</div>
-            <button
-              onClick={() => window.location.reload()}
-              className="btn-ghost-glass mt-3 px-4 py-2 text-sm font-medium"
-            >
-              Try again
-            </button>
-          </div>
-        )}
 
         {/* Scene — real task */}
         {scenes && !done && currentScene && (
@@ -574,18 +551,13 @@ function Simulation({ career }: { career: string }) {
               <div className="mb-2 flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.2em]">
                 <Zap className="h-4 w-4 text-accent" /> AI Mentor's take
               </div>
-              {!summary && !summaryLoading && (
+              {!summary && (
                 <button
                   onClick={generateSummary}
                   className="btn-primary-grad px-4 py-2 text-sm font-semibold"
                 >
-                  Get AI reflection
+                  Get reflection
                 </button>
-              )}
-              {summaryLoading && (
-                <div className="flex items-center gap-2 text-sm">
-                  <Loader2 className="h-4 w-4 animate-spin" /> Reflecting…
-                </div>
               )}
               {summary && <p className="text-sm leading-relaxed text-foreground/85">{summary}</p>}
             </div>
